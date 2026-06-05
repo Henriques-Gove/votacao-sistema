@@ -1,8 +1,4 @@
--- schema.sql
--- Executar no phpMyAdmin ou MySQL CLI
-
-CREATE DATABASE IF NOT EXISTS votacao CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE votacao;
+-- schema.sql -- Tabelas do sistema de votação
 
 -- Utilizadores
 CREATE TABLE IF NOT EXISTS users (
