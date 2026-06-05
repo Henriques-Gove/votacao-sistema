@@ -1,4 +1,6 @@
 const mysql = require('mysql2/promise');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const pool = mysql.createPool({
@@ -11,5 +13,17 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
 });
+
+(async () => {
+  try {
+    const conn = await pool.getConnection();
+    const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+    await conn.query(sql);
+    console.log('Database schema initialized');
+    conn.release();
+  } catch (err) {
+    console.log('Schema init skipped:', err.message);
+  }
+})();
 
 module.exports = pool;
