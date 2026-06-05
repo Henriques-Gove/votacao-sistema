@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: votacao-backend
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node src/index.js
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: votacao-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: votacao-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: votacao-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: votacao-db
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: votacao-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://votacao-frontend.onrender.com
+
+  - type: web
+    name: votacao-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://votacao-backend.onrender.com/api
