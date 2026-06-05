@@ -1,3 +1,9 @@
+databases:
+  - name: votacao-db
+    databaseName: votacao
+    plan: free
+    region: frankfurt
+
 services:
   - type: web
     name: votacao-backend
@@ -25,6 +31,8 @@ services:
         fromDatabase:
           name: votacao-db
           property: password
+      - key: DB_SSL
+        value: "true"
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL

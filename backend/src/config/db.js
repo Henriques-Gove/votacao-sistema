@@ -1,26 +1,27 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
-const pool = mysql.createPool({
+const pool = new Pool({
   host:     process.env.DB_HOST || 'localhost',
-  port:     process.env.DB_PORT || 3306,
+  port:     parseInt(process.env.DB_PORT || '5432'),
   database: process.env.DB_NAME || 'votacao',
-  user:     process.env.DB_USER || 'root',
+  user:     process.env.DB_USER || 'postgres',
   password: process.env.DB_PASS || '',
-  waitForConnections: true,
-  connectionLimit: 10,
-  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 });
 
 (async () => {
   try {
-    const conn = await pool.getConnection();
+    const client = await pool.connect();
     const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
-    await conn.query(sql);
+    await client.query(sql);
     console.log('Database schema initialized');
-    conn.release();
+    client.release();
   } catch (err) {
     console.log('Schema init skipped:', err.message);
   }
