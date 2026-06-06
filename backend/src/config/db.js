@@ -19,7 +19,10 @@ const pool = new Pool({
   try {
     const client = await pool.connect();
     const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
-    await client.query(sql);
+    const statements = sql.split(';').map(s => s.trim()).filter(s => s.length > 0);
+    for (const stmt of statements) {
+      await client.query(stmt);
+    }
     console.log('Database schema initialized');
     client.release();
   } catch (err) {
