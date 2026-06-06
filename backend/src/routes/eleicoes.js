@@ -11,9 +11,51 @@ async function runMigrations() {
     await db.query(`ALTER TABLE eleicoes ADD FOREIGN KEY (grupo_id) REFERENCES grupos(id)`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS foto TEXT`);
     await db.query(`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS cargo_id INT REFERENCES cargos(id)`);
-    await db.query(`ALTER TABLE votos ADD COLUMN IF NOT EXISTS cargo_id INT REFERENCES cargos(id)`);
-    await db.query(`ALTER TABLE votos ADD COLUMN IF NOT EXISTS tipo_voto VARCHAR(20) NOT NULL DEFAULT 'candidato'`);
-    await db.query(`ALTER TABLE votos ADD COLUMN IF NOT EXISTS hash_voto VARCHAR(64)`);
+    await db.query(`ALTER TABLE votos DROP CONSTRAINT IF EXISTS votos_cargo_id_fkey`);
+    await db.query(`ALTER TABLE votos DROP CONSTRAINT IF EXISTS votos_candidato_id_fkey`);
+    await db.query(`ALTER TABLE candidatos DROP CONSTRAINT IF EXISTS candidatos_cargo_id_fkey`);
+    await db.query(`DROP TABLE IF EXISTS votos CASCADE`);
+    await db.query(`DROP TABLE IF EXISTS candidatos CASCADE`);
+    await db.query(`DROP TABLE IF EXISTS cargos CASCADE`);
+    await db.query(`
+      CREATE TABLE cargos (
+        id SERIAL PRIMARY KEY,
+        eleicao_id INT NOT NULL REFERENCES eleicoes(id) ON DELETE CASCADE,
+        nome VARCHAR(100) NOT NULL,
+        descricao TEXT,
+        ordem INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await db.query(`
+      CREATE TABLE candidatos (
+        id SERIAL PRIMARY KEY,
+        eleicao_id INT NOT NULL REFERENCES eleicoes(id) ON DELETE CASCADE,
+        cargo_id INT REFERENCES cargos(id) ON DELETE CASCADE,
+        nome VARCHAR(150) NOT NULL,
+        descricao TEXT,
+        foto_url VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await db.query(`
+      CREATE TABLE votos (
+        id SERIAL PRIMARY KEY,
+        eleicao_id INT NOT NULL,
+        eleitor_id INT NOT NULL,
+        cargo_id INT,
+        candidato_id INT,
+        tipo_voto VARCHAR(20) NOT NULL DEFAULT 'candidato',
+        token_unico VARCHAR(64) NOT NULL UNIQUE,
+        hash_voto VARCHAR(64),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (eleicao_id) REFERENCES eleicoes(id) ON DELETE CASCADE,
+        FOREIGN KEY (eleitor_id) REFERENCES users(id),
+        FOREIGN KEY (cargo_id) REFERENCES cargos(id),
+        FOREIGN KEY (candidato_id) REFERENCES candidatos(id)
+      )
+    `);
+    await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS votos_unique_voto ON votos (eleicao_id, eleitor_id, COALESCE(cargo_id, 0))`);
     await db.query(`UPDATE users SET verified = TRUE WHERE verified = FALSE`);
     console.log('Migrations applied');
   } catch (e) {
