@@ -361,6 +361,7 @@ router.get('/:id/votantes', adminMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Erro interno' });
   }
 });
-
 module.exports = router;
+
 module.exports.autoUpdateStatus = autoUpdateStatus;
+module.exports.runMigrations = runMigrations;

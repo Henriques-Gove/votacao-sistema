@@ -61,6 +61,8 @@ app.get('/api/debug/migrate', async (req, res) => {
 app.post('/api/seed', async (req, res) => {
   const crypto = require('crypto');
   try {
+    const { runMigrations } = require('./routes/eleicoes');
+    if (runMigrations) await runMigrations();
     const hash = await bcrypt.hash('Teste@123', 10);
     const eleitores = [
       ['Maria Silva', 'maria@teste.com'],
