@@ -33,8 +33,8 @@ app.get('/api/debug/migrate', async (req, res) => {
     `ALTER TABLE eleicoes ADD COLUMN IF NOT EXISTS grupo_id INT`,
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS foto TEXT`,
     `ALTER TABLE eleicoes ADD FOREIGN KEY (grupo_id) REFERENCES grupos(id)`,
-    `SELECT column_name FROM information_schema.columns WHERE table_name='eleicoes' AND column_name='multi_cargo'`,
-    `SELECT column_name FROM information_schema.columns WHERE table_name='eleicoes' AND column_name='grupo_id'`,
+    `UPDATE users SET verified = TRUE WHERE verified = FALSE`,
+    `SELECT COUNT(*)::int as unverified FROM users WHERE verified = FALSE`,
   ];
   for (const q of queries) {
     try {

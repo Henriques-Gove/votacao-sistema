@@ -10,6 +10,7 @@ async function runMigrations() {
     await db.query(`ALTER TABLE eleicoes ADD COLUMN IF NOT EXISTS grupo_id INT`);
     await db.query(`ALTER TABLE eleicoes ADD FOREIGN KEY (grupo_id) REFERENCES grupos(id)`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS foto TEXT`);
+    await db.query(`UPDATE users SET verified = TRUE WHERE verified = FALSE`);
     console.log('Migrations applied');
   } catch (e) {
     console.error('Migration error:', e.message);

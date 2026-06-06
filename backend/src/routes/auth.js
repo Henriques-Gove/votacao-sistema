@@ -141,7 +141,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Credenciais inválidas' });
     }
 
-    if (!user.verified) {
+    if (!user.verified && process.env.SMTP_USER && process.env.SMTP_PASS) {
       return res.status(403).json({ message: 'Email não verificado' });
     }
 

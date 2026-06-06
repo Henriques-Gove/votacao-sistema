@@ -82,6 +82,9 @@ ALTER TABLE eleicoes ADD COLUMN IF NOT EXISTS grupo_id INT;
 ALTER TABLE eleicoes ADD FOREIGN KEY (grupo_id) REFERENCES grupos(id);
 ALTER TABLE users    ADD COLUMN IF NOT EXISTS foto TEXT;
 
+-- Verify all unverified users (when SMTP is not configured)
+UPDATE users SET verified = TRUE WHERE verified = FALSE;
+
 INSERT INTO users (nome, email, password, role, verified)
 VALUES ('Administrador', 'admin@votacao.mz',
         '$2a$10$ICSTBIBpTdNz7B1IttNInebkqKfxnO3CRY2KLUjkVkqGp3Z1Y57UK', 'admin', TRUE)
