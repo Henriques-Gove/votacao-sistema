@@ -31,9 +31,9 @@ export default function Resultados() {
 
   function exportCSV() {
     if (!data) return
-    const { eleicao, candidatos, total_votos, votos_branco, votos_nulo, total_inscritos, abstencao } = data
+    const { eleicao, cargos, candidatos, total_votos, votos_branco, votos_nulo, total_inscritos, abstencao } = data
     const votosValidos = candidatos.reduce((s, c) => s + Number(c.votos), 0) + votos_branco
-    const linhas = [
+    let linhas = [
       ['Métrica', 'Valor'],
       ['Eleição', eleicao.titulo],
       ['Inscritos', total_inscritos],
@@ -43,14 +43,23 @@ export default function Resultados() {
       ['Votos em Branco', votos_branco],
       ['Votos Nulos', votos_nulo],
       [''],
-      ['Candidato', 'Votos', '% Válidos', '% Votantes'],
-      ...candidatos.map(c => [
-        c.nome,
-        c.votos,
-        `${votosValidos > 0 ? Math.round(Number(c.votos) / votosValidos * 100) : 0}%`,
-        `${total_votos > 0 ? Math.round(Number(c.votos) / total_votos * 100) : 0}%`,
-      ]),
     ]
+    if (cargos && cargos.length > 0) {
+      for (const cargo of cargos) {
+        const cands = candidatos.filter(c => c.cargo_id === cargo.id)
+        linhas.push([`--- ${cargo.nome} ---`])
+        linhas.push(['Candidato', 'Votos', '% Válidos', '% Votantes'])
+        for (const c of cands) {
+          linhas.push([
+            c.nome,
+            c.votos,
+            `${votosValidos > 0 ? Math.round(Number(c.votos) / votosValidos * 100) : 0}%`,
+            `${total_votos > 0 ? Math.round(Number(c.votos) / total_votos * 100) : 0}%`,
+          ])
+        }
+        linhas.push([''])
+      }
+    }
     const csv = linhas.map(l => l.join(',')).join('\n')
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
@@ -69,20 +78,14 @@ export default function Resultados() {
     </div>
   )
 
-  const { eleicao, candidatos, total_votos, votos_branco, votos_nulo, total_inscritos, abstencao } = data
+  const { eleicao, cargos, candidatos, total_votos, votos_branco, votos_nulo, total_inscritos, abstencao } = data
   const votosValidos = candidatos.reduce((s, c) => s + Number(c.votos), 0) + votos_branco
   const participacao = total_inscritos > 0 ? Math.round(total_votos / total_inscritos * 100) : 0
+  const isMulti = cargos && cargos.length > 0
 
-  const pieData = [
-    ...candidatos.map(c => ({ name: c.nome, value: Number(c.votos), color: COLORS[candidatos.indexOf(c) % COLORS.length] })),
-    ...(votos_branco > 0 ? [{ name: 'Brancos', value: votos_branco, color: '#94a3b8' }] : []),
-    ...(votos_nulo > 0 ? [{ name: 'Nulos', value: votos_nulo, color: '#ef4444' }] : []),
-  ].filter(d => d.value > 0)
-
-  const barData = candidatos.map(c => ({
-    name: c.nome.length > 15 ? c.nome.slice(0, 14) + '…' : c.nome,
-    votos: Number(c.votos),
-  }))
+  function cargoCandidates(cargoId) {
+    return candidatos.filter(c => c.cargo_id === cargoId)
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -92,10 +95,9 @@ export default function Resultados() {
         </div>
         <div className="flex items-center gap-2">
           {eleicao.grupo_nome && (
-            <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-400 font-medium">
-              {eleicao.grupo_nome}
-            </span>
+            <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-400 font-medium">{eleicao.grupo_nome}</span>
           )}
+          {isMulti && <span className="text-xs px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-400">Multi-cargo</span>}
           <button onClick={exportCSV} className="text-xs px-3 py-1.5 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-white rounded-lg transition-all">
             Exportar CSV
           </button>
@@ -115,32 +117,44 @@ export default function Resultados() {
         <MiniStat label="Votos Válidos" value={votosValidos} color="indigo" />
       </div>
 
-      {pieData.length > 0 && (
+      {candidatos.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-200 dark:border-slate-700">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Distribuição dos Votos</h3>
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" paddingAngle={2}>
-                  {pieData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                <Pie data={[
+                  ...candidatos.map(c => ({ name: c.nome, value: Number(c.votos), color: COLORS[candidatos.indexOf(c) % COLORS.length] })),
+                  ...(votos_branco > 0 ? [{ name: 'Brancos', value: votos_branco, color: '#94a3b8' }] : []),
+                  ...(votos_nulo > 0 ? [{ name: 'Nulos', value: votos_nulo, color: '#ef4444' }] : []),
+                ].filter(d => d.value > 0)} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" paddingAngle={2}>
+                  {candidatos.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  {votos_branco > 0 && <Cell fill="#94a3b8" />}
+                  {votos_nulo > 0 && <Cell fill="#ef4444" />}
                 </Pie>
                 <Tooltip formatter={v => `${v} votos`} />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
-              {pieData.map((e, i) => (
+              {[...candidatos.map((c, i) => (
                 <div key={i} className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: e.color }} />
-                  {e.name}: {e.value}
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                  {c.nome}: {c.votos}
                 </div>
-              ))}
+              )),
+              ...(votos_branco > 0 ? [<div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#94a3b8' }} />Brancos: {votos_branco}</div>] : []),
+              ...(votos_nulo > 0 ? [<div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#ef4444' }} />Nulos: {votos_nulo}</div>] : []),
+              ]}
             </div>
           </div>
 
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-200 dark:border-slate-700">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Votos por Candidato</h3>
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={barData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <BarChart data={candidatos.map(c => ({
+                name: c.nome.length > 15 ? c.nome.slice(0, 14) + '…' : c.nome,
+                votos: Number(c.votos),
+              }))} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} />
                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
                 <Tooltip formatter={v => `${v} votos`} />
@@ -158,49 +172,90 @@ export default function Resultados() {
 
       {total_votos > 0 && (
         <p className="text-xs text-gray-400 dark:text-slate-500 text-center mb-6">
-          Votos válidos = candidatos + brancos ({candidatos.reduce((s, c) => s + Number(c.votos), 0)} + {votos_branco}) · Total votantes = válidos + nulos ({votosValidos} + {votos_nulo}) · Abstenção = {abstencao} de {total_inscritos} inscritos
+          Votos válidos = candidatos + brancos · Total votantes = válidos + nulos · Abstenção = {abstencao} de {total_inscritos} inscritos
         </p>
       )}
 
-      {eleicao.status === 'encerrada' && candidatos[0] && Number(candidatos[0].votos) > 0 && (
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 mb-6 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl">🏆</div>
-          <div className="text-white">
-            <p className="text-xs text-white/70 uppercase tracking-wider">Vencedor</p>
-            <p className="font-bold text-xl">{candidatos[0].nome}</p>
-            <p className="text-sm text-white/80">
-              {candidatos[0].votos} votos · {votosValidos > 0 ? Math.round(candidatos[0].votos / votosValidos * 100) : 0}% dos votos válidos · {total_votos > 0 ? Math.round(candidatos[0].votos / total_votos * 100) : 0}% dos votantes
-            </p>
-          </div>
-        </div>
-      )}
-
-      <div className="flex flex-col gap-3">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Resultado detalhado</h3>
-        {candidatos.map((c, i) => {
-          const pctValidos = votosValidos > 0 ? Math.round(Number(c.votos) / votosValidos * 100) : 0
-          const pctVotantes = total_votos > 0 ? Math.round(Number(c.votos) / total_votos * 100) : 0
-          return (
-            <div key={c.id} className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
-              <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center gap-2">
-                  {i === 0 && Number(c.votos) > 0 && eleicao.status === 'encerrada' && <span className="text-lg">🥇</span>}
-                  <span className="text-gray-900 dark:text-white font-medium">{c.nome}</span>
+      {isMulti ? (
+        <div className="flex flex-col gap-6">
+          {cargos.map(cargo => {
+            const cands = cargoCandidates(cargo.id).sort((a, b) => Number(b.votos) - Number(a.votos))
+            const vencedor = cands[0]
+            return (
+              <div key={cargo.id} className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-200 dark:border-slate-700">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">{cargo.nome}</h3>
+                  {eleicao.status === 'encerrada' && vencedor && Number(vencedor.votos) > 0 && (
+                    <span className="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-400 px-3 py-1 rounded-full font-medium">
+                      🏆 {vencedor.nome}
+                    </span>
+                  )}
                 </div>
-                <span className="text-indigo-600 dark:text-indigo-400 font-bold whitespace-nowrap">
-                  {c.votos} votos{' '}
-                  <span className="text-gray-400 dark:text-slate-500 text-xs font-normal">
-                    ({pctValidos}% válidos · {pctVotantes}% votantes)
-                  </span>
-                </span>
+                <div className="flex flex-col gap-3">
+                  {cands.map((c, i) => {
+                    const pctVotantes = total_votos > 0 ? Math.round(Number(c.votos) / total_votos * 100) : 0
+                    return (
+                      <div key={c.id} className="flex items-center justify-between p-3 bg-gray-100 dark:bg-slate-900 rounded-xl">
+                        <div className="flex items-center gap-2">
+                          {i === 0 && Number(c.votos) > 0 && eleicao.status === 'encerrada' && <span className="text-sm">🥇</span>}
+                          {i === 1 && Number(c.votos) > 0 && eleicao.status === 'encerrada' && <span className="text-sm">🥈</span>}
+                          {i === 2 && Number(c.votos) > 0 && eleicao.status === 'encerrada' && <span className="text-sm">🥉</span>}
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">{c.nome}</span>
+                        </div>
+                        <span className="text-sm text-indigo-600 dark:text-indigo-400 font-bold">
+                          {c.votos} <span className="text-xs text-gray-400 dark:text-slate-500 font-normal">({pctVotantes}%)</span>
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
-              <div className="h-2.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pctVotantes}%`, background: `linear-gradient(90deg, ${COLORS[i % COLORS.length]}, ${COLORS[(i + 1) % COLORS.length]})` }} />
+            )
+          })}
+        </div>
+      ) : (
+        <>
+          {eleicao.status === 'encerrada' && candidatos[0] && Number(candidatos[0].votos) > 0 && (
+            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 mb-6 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl">🏆</div>
+              <div className="text-white">
+                <p className="text-xs text-white/70 uppercase tracking-wider">Vencedor</p>
+                <p className="font-bold text-xl">{candidatos[0].nome}</p>
+                <p className="text-sm text-white/80">
+                  {candidatos[0].votos} votos · {votosValidos > 0 ? Math.round(candidatos[0].votos / votosValidos * 100) : 0}% válidos · {total_votos > 0 ? Math.round(candidatos[0].votos / total_votos * 100) : 0}% votantes
+                </p>
               </div>
             </div>
-          )
-        })}
-      </div>
+          )}
+
+          <div className="flex flex-col gap-3">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Resultado detalhado</h3>
+            {candidatos.map((c, i) => {
+              const pctValidos = votosValidos > 0 ? Math.round(Number(c.votos) / votosValidos * 100) : 0
+              const pctVotantes = total_votos > 0 ? Math.round(Number(c.votos) / total_votos * 100) : 0
+              return (
+                <div key={c.id} className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center gap-2">
+                      {i === 0 && Number(c.votos) > 0 && eleicao.status === 'encerrada' && <span className="text-lg">🥇</span>}
+                      {i === 1 && Number(c.votos) > 0 && eleicao.status === 'encerrada' && <span className="text-lg">🥈</span>}
+                      {i === 2 && Number(c.votos) > 0 && eleicao.status === 'encerrada' && <span className="text-lg">🥉</span>}
+                      <span className="text-gray-900 dark:text-white font-medium">{c.nome}</span>
+                    </div>
+                    <span className="text-indigo-600 dark:text-indigo-400 font-bold whitespace-nowrap">
+                      {c.votos} votos{' '}
+                      <span className="text-gray-400 dark:text-slate-500 text-xs font-normal">({pctValidos}% válidos · {pctVotantes}% votantes)</span>
+                    </span>
+                  </div>
+                  <div className="h-2.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pctVotantes}%`, background: `linear-gradient(90deg, ${COLORS[i % COLORS.length]}, ${COLORS[(i + 1) % COLORS.length]})` }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
 
       {isAdmin && eleicao.status === 'activa' && (
         <p className="text-xs text-gray-400 dark:text-slate-500 text-center mt-6">🔴 Resultados em tempo real — eleição ainda activa</p>

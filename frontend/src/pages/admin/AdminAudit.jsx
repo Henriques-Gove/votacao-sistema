@@ -1,16 +1,24 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import api from '@/api/client'
 
 export default function AdminAudit() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [eleicoes, setEleicoes]   = useState([])
   const [selected, setSelected]   = useState(null)
   const [votantes, setVotantes]   = useState([])
   const [loading, setLoading]     = useState(true)
 
   useEffect(() => {
-    api.get('/eleicoes').then(setEleicoes).finally(() => setLoading(false))
+    api.get('/eleicoes').then(el => {
+      setEleicoes(el)
+      const paramId = searchParams.get('eleicao')
+      if (paramId) {
+        const found = el.find(e => e.id === Number(paramId))
+        if (found) loadVotantes(found.id)
+      }
+    }).finally(() => setLoading(false))
   }, [])
 
   async function loadVotantes(eleicaoId) {
@@ -22,6 +30,8 @@ export default function AdminAudit() {
     } catch (e) { setVotantes([]) }
     finally { setLoading(false) }
   }
+
+  const selectedEleicao = eleicoes.find(e => e.id === selected)
 
   return (
     <div>
@@ -43,7 +53,7 @@ export default function AdminAudit() {
                       : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'
                   }`}>
                   <span className="block font-medium">{e.titulo}</span>
-                  <span className="block text-xs opacity-60">{e.status}</span>
+                  <span className="block text-xs opacity-60">{e.status} {e.multi_cargo ? '· Multi' : ''}</span>
                 </button>
               ))}
             </div>
@@ -52,7 +62,7 @@ export default function AdminAudit() {
 
         <div className="md:col-span-2 bg-white dark:bg-slate-800 rounded-2xl p-5 border border-gray-200 dark:border-slate-700">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">
-            {selected ? 'Eleitores que votaram' : 'Seleccione uma eleição'}
+            {selected ? `Eleitores — ${selectedEleicao?.titulo}` : 'Seleccione uma eleição'}
           </h3>
           {loading ? (
             <p className="text-sm text-gray-500 dark:text-slate-400">A carregar...</p>
@@ -65,15 +75,17 @@ export default function AdminAudit() {
                   <tr className="text-left text-gray-500 dark:text-slate-400 text-xs uppercase">
                     <th className="pb-2 pr-4">Nome</th>
                     <th className="pb-2 pr-4">Email</th>
+                    <th className="pb-2 pr-4">Cargo</th>
                     <th className="pb-2 pr-4">Voto</th>
                     <th className="pb-2">Data/Hora</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-                  {votantes.map(v => (
-                    <tr key={`${v.id}-${v.votou_em}`} className="text-gray-700 dark:text-slate-300">
+                  {votantes.map((v, i) => (
+                    <tr key={`${v.id}-${v.votou_em}-${i}`} className="text-gray-700 dark:text-slate-300">
                       <td className="py-2.5 pr-4">{v.nome}</td>
                       <td className="py-2.5 pr-4 text-xs">{v.email}</td>
+                      <td className="py-2.5 pr-4 text-xs">{v.cargo_nome || '—'}</td>
                       <td className="py-2.5 pr-4">
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
                           v.tipo_voto === 'candidato' ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-400' :

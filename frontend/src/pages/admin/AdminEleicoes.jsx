@@ -55,6 +55,7 @@ export default function AdminEleicoes() {
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <StatusBadge status={e.status} />
                     {e.grupo_nome && <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-400">{e.grupo_nome}</span>}
+                    {e.multi_cargo && <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-400">Multi-cargo</span>}
                   </div>
                   <h3 className="text-gray-900 dark:text-white font-semibold">{e.titulo}</h3>
                   <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
@@ -78,7 +79,7 @@ export default function AdminEleicoes() {
                     className="text-xs px-3 py-1.5 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-white rounded-lg transition-all">
                     Resultados
                   </Link>
-                  <Link to="/admin/audit"
+                  <Link to={`/admin/audit?eleicao=${e.id}`}
                     className="text-xs px-3 py-1.5 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-white rounded-lg transition-all">
                     Votantes
                   </Link>

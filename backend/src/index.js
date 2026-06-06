@@ -37,6 +37,11 @@ app.use((req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+// Auto-schedule elections on startup
+const { autoUpdateStatus } = require('./routes/eleicoes');
+
+app.listen(PORT, async () => {
   console.log(`Servidor a correr em http://localhost:${PORT}`);
+  await autoUpdateStatus();
+  console.log('Status das eleições actualizado');
 });

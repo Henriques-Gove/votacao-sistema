@@ -32,14 +32,25 @@ CREATE TABLE IF NOT EXISTS eleicoes (
   inicio      TIMESTAMP NOT NULL,
   fim         TIMESTAMP NOT NULL,
   status      VARCHAR(20) NOT NULL DEFAULT 'rascunho',
+  multi_cargo BOOLEAN NOT NULL DEFAULT FALSE,
   criado_por  INT NOT NULL REFERENCES users(id),
   grupo_id    INT REFERENCES grupos(id),
   created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS cargos (
+  id         SERIAL PRIMARY KEY,
+  eleicao_id INT NOT NULL REFERENCES eleicoes(id) ON DELETE CASCADE,
+  nome       VARCHAR(100) NOT NULL,
+  descricao  TEXT,
+  ordem      INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS candidatos (
   id         SERIAL PRIMARY KEY,
   eleicao_id INT NOT NULL REFERENCES eleicoes(id) ON DELETE CASCADE,
+  cargo_id   INT REFERENCES cargos(id) ON DELETE CASCADE,
   nome       VARCHAR(150) NOT NULL,
   descricao  TEXT,
   foto_url   VARCHAR(255),
@@ -50,15 +61,18 @@ CREATE TABLE IF NOT EXISTS votos (
   id           SERIAL PRIMARY KEY,
   eleicao_id   INT NOT NULL,
   eleitor_id   INT NOT NULL,
+  cargo_id     INT,
   candidato_id INT,
   tipo_voto    VARCHAR(20) NOT NULL DEFAULT 'candidato',
   token_unico  VARCHAR(64) NOT NULL UNIQUE,
   created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (eleicao_id, eleitor_id),
   FOREIGN KEY (eleicao_id)   REFERENCES eleicoes(id)   ON DELETE CASCADE,
   FOREIGN KEY (eleitor_id)   REFERENCES users(id),
+  FOREIGN KEY (cargo_id)     REFERENCES cargos(id),
   FOREIGN KEY (candidato_id) REFERENCES candidatos(id)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS votos_unique_voto ON votos (eleicao_id, eleitor_id, COALESCE(cargo_id, 0));
 
 INSERT INTO users (nome, email, password, role, verified)
 VALUES ('Administrador', 'admin@votacao.mz',

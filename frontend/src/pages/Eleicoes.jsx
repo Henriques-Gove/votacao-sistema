@@ -66,6 +66,7 @@ export default function Eleicoes() {
                   ) : (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400">Geral</span>
                   )}
+                  {e.multi_cargo && <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-400">Multi-cargo</span>}
                 </div>
                 <h3 className="text-gray-900 dark:text-white font-semibold text-lg">{e.titulo}</h3>
                 {e.descricao && <p className="text-gray-500 dark:text-slate-400 text-sm mt-1 line-clamp-2">{e.descricao}</p>}
