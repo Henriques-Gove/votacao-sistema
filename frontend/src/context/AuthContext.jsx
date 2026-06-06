@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '@/api/client';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const navigate = useNavigate();
   const [user, setUser]       = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +32,7 @@ export function AuthProvider({ children }) {
   function logout() {
     localStorage.removeItem('token');
     setUser(null);
-    window.location.href = '/login';
+    navigate('/login', { replace: true });
   }
 
   async function refreshUser() {

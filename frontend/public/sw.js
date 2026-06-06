@@ -1,7 +1,8 @@
-const CACHE = 'votacao-mz-v1'
+const CACHE = 'votacao-mz-v2'
+const SHELL = ['/', '/index.html']
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/', '/index.html'])))
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)))
   self.skipWaiting()
 })
 
@@ -12,7 +13,13 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return
+  const url = new URL(e.request.url)
+  if (url.origin !== location.origin) return
+  if (url.pathname.startsWith('/api/')) {
+    e.respondWith(fetch(e.request).catch(() => new Response('{"status":"error"}', { status: 503 })))
+    return
+  }
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    fetch(e.request).catch(() => caches.match(e.request).then(cached => cached || caches.match('/index.html')))
   )
 })
