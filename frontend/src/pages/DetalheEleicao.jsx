@@ -28,51 +28,51 @@ export default function DetalheEleicao() {
     } finally { setVoting(false) }
   }
 
-  if (loading) return <p className="text-slate-400">A carregar...</p>
+  if (loading) return <p className="text-gray-500 dark:text-slate-400">A carregar...</p>
   if (!eleicao) return null
 
   return (
     <div className="max-w-2xl mx-auto">
-      <button onClick={() => navigate('/eleicoes')} className="text-sm text-slate-400 hover:text-white mb-6 flex items-center gap-2">
+      <button onClick={() => navigate('/eleicoes')} className="text-sm text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white mb-6 flex items-center gap-2">
         ← Voltar
       </button>
 
-      <h2 className="text-2xl font-bold text-white mb-2">{eleicao.titulo}</h2>
-      {eleicao.descricao && <p className="text-slate-400 mb-2">{eleicao.descricao}</p>}
-      <p className="text-xs text-slate-500 mb-8">Termina em: {new Date(eleicao.fim).toLocaleString('pt-PT')}</p>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{eleicao.titulo}</h2>
+      {eleicao.descricao && <p className="text-gray-500 dark:text-slate-400 mb-2">{eleicao.descricao}</p>}
+      <p className="text-xs text-gray-400 dark:text-slate-500 mb-8">Termina em: {new Date(eleicao.fim).toLocaleString('pt-PT')}</p>
 
       {eleicao.ja_votou ? (
-        <div className="bg-green-900/30 border border-green-700 rounded-2xl p-6 text-center">
-          <p className="text-green-400 font-semibold text-lg">✓ Já votou nesta eleição</p>
+        <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-2xl p-6 text-center">
+          <p className="text-green-700 dark:text-green-400 font-semibold text-lg">✓ Já votou nesta eleição</p>
           <button onClick={() => navigate(`/eleicoes/${id}/resultados`)}
             className="mt-4 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm transition-all">
             Ver Resultados Parciais
           </button>
         </div>
       ) : eleicao.status !== 'activa' ? (
-        <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 text-center">
-          <p className="text-slate-400">Esta eleição não está activa para votação.</p>
+        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-6 text-center">
+          <p className="text-gray-500 dark:text-slate-400">Esta eleição não está activa para votação.</p>
         </div>
       ) : (
         <>
-          <h3 className="font-semibold text-white mb-4">Seleccione o seu candidato:</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Seleccione o seu candidato:</h3>
           <div className="flex flex-col gap-3 mb-6">
             {eleicao.candidatos.map(c => (
               <button key={c.id} onClick={() => setSelecionado(c.id)}
                 className={`w-full text-left p-4 rounded-xl border transition-all ${
                   selecionado === c.id
-                    ? 'border-indigo-500 bg-indigo-900/30'
-                    : 'border-slate-700 bg-slate-800 hover:border-slate-500'
+                    ? 'border-indigo-500 bg-indigo-100 dark:bg-indigo-900/30'
+                    : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-400 dark:hover:border-slate-500'
                 }`}>
                 <div className="flex items-center gap-3">
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    selecionado === c.id ? 'border-indigo-400' : 'border-slate-600'
+                    selecionado === c.id ? 'border-indigo-400' : 'border-gray-400 dark:border-slate-600'
                   }`}>
                     {selecionado === c.id && <div className="w-2.5 h-2.5 rounded-full bg-indigo-400" />}
                   </div>
                   <div>
-                    <p className="font-medium text-white">{c.nome}</p>
-                    {c.descricao && <p className="text-sm text-slate-400 mt-0.5">{c.descricao}</p>}
+                    <p className="font-medium text-gray-900 dark:text-white">{c.nome}</p>
+                    {c.descricao && <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">{c.descricao}</p>}
                   </div>
                 </div>
               </button>
@@ -83,7 +83,7 @@ export default function DetalheEleicao() {
             className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl transition-all">
             {voting ? 'A registar voto...' : 'Confirmar Voto'}
           </button>
-          <p className="text-xs text-slate-500 text-center mt-3">O voto é confidencial e irreversível</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500 text-center mt-3">O voto é confidencial e irreversível</p>
         </>
       )}
     </div>
