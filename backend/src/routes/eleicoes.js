@@ -12,6 +12,7 @@ async function runMigrations() {
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS foto TEXT`);
     await db.query(`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS cargo_id INT REFERENCES cargos(id)`);
     await db.query(`ALTER TABLE votos ADD COLUMN IF NOT EXISTS cargo_id INT REFERENCES cargos(id)`);
+    await db.query(`ALTER TABLE votos ADD COLUMN IF NOT EXISTS tipo_voto VARCHAR(20) NOT NULL DEFAULT 'candidato'`);
     await db.query(`ALTER TABLE votos ADD COLUMN IF NOT EXISTS hash_voto VARCHAR(64)`);
     await db.query(`UPDATE users SET verified = TRUE WHERE verified = FALSE`);
     console.log('Migrations applied');
