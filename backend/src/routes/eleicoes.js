@@ -7,7 +7,8 @@ const router = express.Router();
 async function runMigrations() {
   try {
     await db.query(`ALTER TABLE eleicoes ADD COLUMN IF NOT EXISTS multi_cargo BOOLEAN NOT NULL DEFAULT FALSE`);
-    await db.query(`ALTER TABLE eleicoes ADD COLUMN IF NOT EXISTS grupo_id INT REFERENCES grupos(id)`);
+    await db.query(`ALTER TABLE eleicoes ADD COLUMN IF NOT EXISTS grupo_id INT`);
+    await db.query(`ALTER TABLE eleicoes ADD FOREIGN KEY (grupo_id) REFERENCES grupos(id)`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS foto TEXT`);
     console.log('Migrations applied');
   } catch (e) {
@@ -16,6 +17,7 @@ async function runMigrations() {
 }
 
 async function autoUpdateStatus() {
+  await runMigrations();
   try {
     const { rowCount: ativadas } = await db.query(
       `UPDATE eleicoes SET status = 'activa'
