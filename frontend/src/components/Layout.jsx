@@ -45,7 +45,7 @@ export default function Layout() {
             <NavLink to="/" active={location.pathname === '/'}>Dashboard</NavLink>
             <NavLink to="/eleicoes" active={isActive('/eleicoes')}>Eleições</NavLink>
             <NavLink to="/verificar" active={isActive('/verificar')}>Verificar Voto</NavLink>
-            <NavLink to="/suporte" active={isActive('/suporte')}>Suporte</NavLink>
+            {!isAdmin && <NavLink to="/suporte" active={isActive('/suporte')}>Suporte</NavLink>}
             {isAdmin && <>
               <span className="w-px h-5 bg-gray-200 dark:bg-slate-700 mx-1" />
               <NavLink to="/admin/eleicoes" active={isActive('/admin/eleicoes')}>Gerir Eleições</NavLink>
@@ -108,7 +108,7 @@ export default function Layout() {
           <NavLink to="/" active={location.pathname === '/'}>Dashboard</NavLink>
           <NavLink to="/eleicoes" active={isActive('/eleicoes')}>Eleições</NavLink>
           <NavLink to="/verificar" active={isActive('/verificar')}>Verificar</NavLink>
-          <NavLink to="/suporte" active={isActive('/suporte')}>Suporte</NavLink>
+          {!isAdmin && <NavLink to="/suporte" active={isActive('/suporte')}>Suporte</NavLink>}
           <NavLink to="/perfil" active={isActive('/perfil')}>Perfil</NavLink>
           {isAdmin && <>
             <span className="w-px h-5 bg-gray-200 dark:bg-slate-700 self-center mx-0.5" />
