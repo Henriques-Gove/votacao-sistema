@@ -167,7 +167,7 @@ router.get('/me', require('../middleware/auth').authMiddleware, async (req, res)
 router.put('/foto', require('../middleware/auth').authMiddleware, async (req, res) => {
   const { foto } = req.body;
   if (!foto) return res.status(400).json({ message: 'Foto é obrigatória' });
-  if (foto.length > 500000) return res.status(400).json({ message: 'Imagem muito grande (máx 500KB)' });
+  if (foto.length > 20_000_000) return res.status(400).json({ message: 'Imagem muito grande (máx 20MB)' });
   try {
     await db.query('UPDATE users SET foto = $1 WHERE id = $2', [foto, req.user.id]);
     res.json({ message: 'Foto actualizada', foto });

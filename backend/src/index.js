@@ -16,7 +16,7 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || '*'
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '30mb' }));
 
 // Rotas
 app.use('/api/auth', authRouter);

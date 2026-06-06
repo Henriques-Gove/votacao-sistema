@@ -5,7 +5,8 @@ import toast from 'react-hot-toast'
 
 export default function Perfil() {
   const { user, login, refreshUser } = useAuth()
-  const fileRef = useRef()
+  const galeriaRef = useRef()
+  const cameraRef = useRef()
   const [foto, setFoto]           = useState(null)
   const [nome, setNome]           = useState('')
   const [email, setEmail]         = useState('')
@@ -25,7 +26,7 @@ export default function Perfil() {
 
   async function uploadFoto(file) {
     if (!file) return
-    if (file.size > 500000) return toast.error('Imagem muito grande (máx 500KB)')
+    if (file.size > 20_000_000) return toast.error('Imagem muito grande (máx 20MB)')
     const reader = new FileReader()
     reader.onload = async () => {
       const base64 = reader.result
@@ -90,10 +91,14 @@ export default function Perfil() {
                 </div>
               )}
             </div>
-            <div className="flex gap-2">
-              <button onClick={() => fileRef.current?.click()}
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => galeriaRef.current?.click()}
                 className="text-xs px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all">
-                {foto ? 'Alterar' : 'Adicionar'} Foto
+                {foto ? 'Alterar' : 'Escolher'} Foto
+              </button>
+              <button onClick={() => cameraRef.current?.click()}
+                className="text-xs px-3 py-1.5 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-300 rounded-lg transition-all">
+                Tirar Foto
               </button>
               {foto && (
                 <button onClick={removerFoto}
@@ -102,9 +107,10 @@ export default function Perfil() {
                 </button>
               )}
             </div>
-            <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => uploadFoto(e.target.files[0])} />
+            <input ref={galeriaRef} type="file" accept="image/*" className="hidden" onChange={e => uploadFoto(e.target.files[0])} />
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => uploadFoto(e.target.files[0])} />
           </div>
-          <p className="text-xs text-gray-400 dark:text-slate-500">A foto pode ser tirada com a câmara do telemóvel. Máx 500KB.</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500">Pode escolher da galeria ou tirar foto com a câmara. Máx 20MB.</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-200 dark:border-slate-700 flex flex-col gap-4">
