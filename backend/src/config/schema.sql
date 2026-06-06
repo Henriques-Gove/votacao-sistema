@@ -86,22 +86,6 @@ CREATE TABLE IF NOT EXISTS suporte_mensagens (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Migrations for tables created before new columns were added
-ALTER TABLE eleicoes    ADD COLUMN IF NOT EXISTS multi_cargo BOOLEAN NOT NULL DEFAULT FALSE;
-ALTER TABLE eleicoes    ADD COLUMN IF NOT EXISTS grupo_id INT;
-ALTER TABLE eleicoes    ADD FOREIGN KEY (grupo_id) REFERENCES grupos(id);
-ALTER TABLE users       ADD COLUMN IF NOT EXISTS foto TEXT;
-ALTER TABLE suporte_mensagens ADD COLUMN IF NOT EXISTS resposta TEXT;
-ALTER TABLE suporte_mensagens ADD COLUMN IF NOT EXISTS respondido_em TIMESTAMP;
-ALTER TABLE candidatos  ADD COLUMN IF NOT EXISTS cargo_id INT REFERENCES cargos(id);
--- Recreate cargos, candidatos, votos with full schema (safe if empty)
-ALTER TABLE votos DROP CONSTRAINT IF EXISTS votos_cargo_id_fkey;
-ALTER TABLE votos DROP CONSTRAINT IF EXISTS votos_candidato_id_fkey;
-ALTER TABLE candidatos DROP CONSTRAINT IF EXISTS candidatos_cargo_id_fkey;
-DROP TABLE IF EXISTS votos CASCADE;
-DROP TABLE IF EXISTS candidatos CASCADE;
-DROP TABLE IF EXISTS cargos CASCADE;
-
 -- Verify all unverified users (when SMTP is not configured)
 UPDATE users SET verified = TRUE WHERE verified = FALSE;
 
