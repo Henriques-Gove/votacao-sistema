@@ -210,7 +210,7 @@ export default function NovaEleicao() {
         )}
 
         <button onClick={submeter} disabled={loading}
-          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl transition-all">
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 text-white font-semibold transition-all shadow-lg shadow-indigo-500/30">
           {loading ? 'A criar...' : 'Criar Eleição'}
         </button>
       </div>
@@ -228,5 +228,5 @@ function Field({ label, children }) {
 }
 
 function Input(props) {
-  return <input {...props} className="w-full bg-gray-100 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-600" />
+  return <input {...props} className="w-full rounded-xl bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500/30 transition-all placeholder:text-gray-400 dark:placeholder:text-slate-600" />
 }

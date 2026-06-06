@@ -15,7 +15,7 @@ import AdminUtilizadores from './pages/admin/AdminUtilizadores'
 import AdminGrupos from './pages/admin/AdminGrupos'
 import AdminGrupoMembros from './pages/admin/AdminGrupoMembros'
 import AdminAudit from './pages/admin/AdminAudit'
-import AdminDashboard from './pages/admin/AdminDashboard'
+
 import NovaEleicao from './pages/admin/NovaEleicao'
 
 function PrivateRoute({ children }) {
@@ -52,7 +52,7 @@ export default function App() {
         <Route path="admin/grupos" element={<AdminRoute><AdminGrupos /></AdminRoute>} />
         <Route path="admin/grupos/:id" element={<AdminRoute><AdminGrupoMembros /></AdminRoute>} />
         <Route path="admin/audit" element={<AdminRoute><AdminAudit /></AdminRoute>} />
-        <Route path="admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="admin" element={<Navigate to="/" />} />
       </Route>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

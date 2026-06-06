@@ -40,7 +40,7 @@ export default function AdminEleicoes() {
           <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Painel de administração</p>
         </div>
         <Link to="/admin/eleicoes/nova"
-          className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-all">
+          className="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-semibold transition-all shadow-lg shadow-indigo-500/30">
           + Nova Eleição
         </Link>
       </div>
@@ -65,26 +65,26 @@ export default function AdminEleicoes() {
                 <div className="flex flex-wrap gap-2">
                   {e.status === 'rascunho' && (
                     <button onClick={() => mudarStatus(e.id, 'activa')}
-                      className="text-xs px-3 py-1.5 bg-green-700 hover:bg-green-600 text-white rounded-lg transition-all">
+                      className="text-xs px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition-all shadow-sm">
                       Activar
                     </button>
                   )}
                   {e.status === 'activa' && (
                     <button onClick={() => mudarStatus(e.id, 'encerrada')}
-                      className="text-xs px-3 py-1.5 bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg transition-all">
+                      className="text-xs px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl transition-all shadow-sm">
                       Encerrar
                     </button>
                   )}
                   <Link to={`/eleicoes/${e.id}/resultados`}
-                    className="text-xs px-3 py-1.5 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-white rounded-lg transition-all">
+                    className="text-xs px-3 py-1.5 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-white rounded-xl transition-all">
                     Resultados
                   </Link>
                   <Link to={`/admin/audit?eleicao=${e.id}`}
-                    className="text-xs px-3 py-1.5 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-white rounded-lg transition-all">
+                    className="text-xs px-3 py-1.5 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-white rounded-xl transition-all">
                     Votantes
                   </Link>
                   <button onClick={() => eliminar(e.id)}
-                    className="text-xs px-3 py-1.5 bg-red-100 dark:bg-red-900/50 hover:bg-red-600 text-red-700 dark:text-red-400 hover:text-white border border-red-300 dark:border-red-700 rounded-lg transition-all">
+                    className="text-xs px-3 py-1.5 bg-red-50 dark:bg-red-900/30 hover:bg-red-600 text-red-600 dark:text-red-400 hover:text-white border border-red-200 dark:border-red-800 rounded-xl transition-all">
                     Eliminar
                   </button>
                 </div>
