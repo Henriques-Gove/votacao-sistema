@@ -67,7 +67,7 @@ app.post('/api/seed', async (req, res) => {
     await db.query('DELETE FROM cargos');
     await db.query('DELETE FROM eleicoes');
     await db.query("DELETE FROM users WHERE role = 'eleitor'");
-    await db.query('DELETE FROM audit_log');
+    try { await db.query('DELETE FROM audit_log'); } catch (_) {}
     await db.query('DELETE FROM suporte_mensagens');
 
     const hash = await bcrypt.hash('Teste@123', 10);
