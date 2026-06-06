@@ -55,6 +55,7 @@ app.get('/api/debug/migrate', async (req, res) => {
 
 // Seed test data
 app.post('/api/seed', async (req, res) => {
+  const crypto = require('crypto');
   try {
     const hash = await bcrypt.hash('Teste@123', 10);
     const eleitores = [
@@ -68,6 +69,16 @@ app.post('/api/seed', async (req, res) => {
       ['Luís Almeida', 'luis@teste.com'],
       ['Catarina Fernandes', 'catarina@teste.com'],
       ['Miguel Gonçalves', 'miguel@teste.com'],
+      ['André Matos', 'andre@teste.com'],
+      ['Bárbara Nunes', 'barbara@teste.com'],
+      ['Cláudio Ramos', 'claudio@teste.com'],
+      ['Dulce Fonseca', 'dulce@teste.com'],
+      ['Eduardo Lopes', 'eduardo@teste.com'],
+      ['Francisca Neves', 'francisca@teste.com'],
+      ['Gilberto Martins', 'gilberto@teste.com'],
+      ['Helena Figo', 'helena@teste.com'],
+      ['Ivan Pereira', 'ivan@teste.com'],
+      ['Joana Matias', 'joana@teste.com'],
     ];
     for (const [nome, email] of eleitores) {
       await db.query(
@@ -132,12 +143,16 @@ app.post('/api/seed', async (req, res) => {
       },
     ];
 
+    // Guardar eleicoes e candidatos para votação
+    const eleicoesCriadas = [];
+
     for (const el of eleicoes) {
       const { rows } = await db.query(
         'INSERT INTO eleicoes (titulo, descricao, inicio, fim, status, multi_cargo, criado_por) VALUES ($1,$2,$3,$4,$5,$6,1) RETURNING id',
         [el.titulo, el.descricao, el.inicio, el.fim, el.status, el.multi_cargo]
       );
       const eid = rows[0].id;
+      const info = { id: eid, multi_cargo: el.multi_cargo, status: el.status, cargos: [] };
 
       if (el.multi_cargo) {
         for (let i = 0; i < el.cargos.length; i++) {
@@ -146,19 +161,89 @@ app.post('/api/seed', async (req, res) => {
             'INSERT INTO cargos (eleicao_id, nome, ordem) VALUES ($1,$2,$3) RETURNING id',
             [eid, crg.nome, i]
           );
+          const cargoInfo = { id: cr.id, nome: crg.nome, candidatos: [] };
           for (const nome of crg.candidatos) {
-            await db.query('INSERT INTO candidatos (eleicao_id, cargo_id, nome) VALUES ($1,$2,$3)', [eid, cr.id, nome]);
+            const { rows: cand } = await db.query(
+              'INSERT INTO candidatos (eleicao_id, cargo_id, nome) VALUES ($1,$2,$3) RETURNING id',
+              [eid, cr.id, nome]
+            );
+            cargoInfo.candidatos.push({ id: cand[0].id, nome });
+          }
+          info.cargos.push(cargoInfo);
+        }
+      } else {
+        info.candidatos = [];
+        for (const nome of el.candidatos) {
+          const { rows: cand } = await db.query(
+            'INSERT INTO candidatos (eleicao_id, nome) VALUES ($1,$2) RETURNING id',
+            [eid, nome]
+          );
+          info.candidatos.push({ id: cand[0].id, nome });
+        }
+      }
+      eleicoesCriadas.push(info);
+    }
+
+    await autoUpdateStatus();
+
+    // Votar nas eleições activas
+    const { rows: votantes } = await db.query(
+      "SELECT id FROM users WHERE role = 'eleitor' AND verified = TRUE ORDER BY id"
+    );
+    const primeiros = votantes.slice(0, 15);
+
+    for (const el of eleicoesCriadas) {
+      if (el.status !== 'activa') continue;
+
+      if (el.multi_cargo) {
+        for (const cargo of el.cargos) {
+          for (const u of primeiros) {
+            const tipo = Math.random() < 0.85 ? 'candidato' : (Math.random() < 0.5 ? 'branco' : 'nulo');
+            let candidato_id = null;
+            if (tipo === 'candidato') {
+              const rand = cargo.candidatos[Math.floor(Math.random() * cargo.candidatos.length)];
+              candidato_id = rand.id;
+            }
+            const token = crypto.randomBytes(32).toString('hex');
+            const hashVoto = candidato_id
+              ? crypto.createHmac('sha256', token).update(String(candidato_id)).digest('hex')
+              : null;
+            try {
+              await db.query(
+                'INSERT INTO votos (eleicao_id, eleitor_id, cargo_id, candidato_id, tipo_voto, token_unico, hash_voto) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+                [el.id, u.id, cargo.id, candidato_id, tipo, token, hashVoto]
+              );
+            } catch (e) { if (e.code !== '23505') throw e }
           }
         }
       } else {
-        for (const nome of el.candidatos) {
-          await db.query('INSERT INTO candidatos (eleicao_id, nome) VALUES ($1,$2)', [eid, nome]);
+        for (const u of primeiros) {
+          const tipo = Math.random() < 0.85 ? 'candidato' : (Math.random() < 0.5 ? 'branco' : 'nulo');
+          let candidato_id = null;
+          if (tipo === 'candidato') {
+            const rand = el.candidatos[Math.floor(Math.random() * el.candidatos.length)];
+            candidato_id = rand.id;
+          }
+          const token = crypto.randomBytes(32).toString('hex');
+          const hashVoto = candidato_id
+            ? crypto.createHmac('sha256', token).update(String(candidato_id)).digest('hex')
+            : null;
+          try {
+            await db.query(
+              'INSERT INTO votos (eleicao_id, eleitor_id, cargo_id, candidato_id, tipo_voto, token_unico, hash_voto) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+              [el.id, u.id, null, candidato_id, tipo, token, hashVoto]
+            );
+          } catch (e) { if (e.code !== '23505') throw e }
         }
       }
     }
 
-    await autoUpdateStatus();
-    res.json({ message: 'Dados de teste criados com sucesso!', eleitores: eleitores.length, eleicoes: eleicoes.length });
+    res.json({
+      message: 'Dados de teste criados com sucesso!',
+      eleitores: eleitores.length,
+      eleicoes: eleicoes.length,
+      votos_registados: '15 votantes em 3 eleições activas'
+    });
   } catch (e) {
     console.error('ERRO SEED:', e);
     res.status(500).json({ message: 'Erro ao criar dados de teste', error: e.message });
