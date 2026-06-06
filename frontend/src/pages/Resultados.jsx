@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import api from '@/api/client'
 import { useAuth } from '@/context/AuthContext'
 
@@ -70,6 +72,75 @@ export default function Resultados() {
     URL.revokeObjectURL(url)
   }
 
+  function exportPDF() {
+    if (!data) return
+    const { eleicao, cargos, candidatos, total_votos, votos_branco, votos_nulo, total_inscritos, abstencao } = data
+    const votosValidos = candidatos.reduce((s, c) => s + Number(c.votos), 0) + votos_branco
+    const doc = new jsPDF()
+
+    doc.setFontSize(18)
+    doc.setTextColor(79, 70, 229)
+    doc.text('VotaçãoMZ', 14, 20)
+    doc.setFontSize(14)
+    doc.setTextColor(0, 0, 0)
+    doc.text(eleicao.titulo, 14, 30)
+
+    doc.setFontSize(9)
+    doc.setTextColor(100, 100, 100)
+    if (eleicao.grupo_nome) doc.text(`Grupo: ${eleicao.grupo_nome}`, 14, 37)
+    doc.text(`Período: ${new Date(eleicao.inicio).toLocaleDateString('pt-PT')} — ${new Date(eleicao.fim).toLocaleDateString('pt-PT')}`, 14, 43)
+    doc.text(`Status: ${eleicao.status}`, 14, 49)
+
+    autoTable(doc, {
+      startY: 56,
+      head: [['Métrica', 'Valor']],
+      body: [
+        ['Inscritos', String(total_inscritos)],
+        ['Votantes', String(total_votos)],
+        ['Abstenção', String(abstencao)],
+        ['Participação', `${total_inscritos > 0 ? Math.round(total_votos / total_inscritos * 100) : 0}%`],
+        ['Votos Válidos', String(votosValidos)],
+        ['Votos em Branco', String(votos_branco)],
+        ['Votos Nulos', String(votos_nulo)],
+      ],
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [79, 70, 229] },
+    })
+
+    if (cargos && cargos.length > 0) {
+      for (const cargo of cargos) {
+        const cands = candidatos.filter(c => c.cargo_id === cargo.id).sort((a, b) => Number(b.votos) - Number(a.votos))
+        doc.addPage()
+        doc.setFontSize(14)
+        doc.setTextColor(79, 70, 229)
+        doc.text(cargo.nome, 14, 20)
+        autoTable(doc, {
+          startY: 28,
+          head: [['#', 'Candidato', 'Votos', '% Votantes']],
+          body: cands.map((c, i) => [String(i + 1), c.nome, String(c.votos), `${total_votos > 0 ? Math.round(Number(c.votos) / total_votos * 100) : 0}%`]),
+          styles: { fontSize: 9 },
+          headStyles: { fillColor: [79, 70, 229] },
+        })
+      }
+    } else {
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 10,
+        head: [['#', 'Candidato', 'Votos', '% Válidos', '% Votantes']],
+        body: candidatos.map((c, i) => [
+          String(i + 1),
+          c.nome,
+          String(c.votos),
+          `${votosValidos > 0 ? Math.round(Number(c.votos) / votosValidos * 100) : 0}%`,
+          `${total_votos > 0 ? Math.round(Number(c.votos) / total_votos * 100) : 0}%`,
+        ]),
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [79, 70, 229] },
+      })
+    }
+
+    doc.save(`${eleicao.titulo.replace(/\s+/g, '_')}_resultados.pdf`)
+  }
+
   if (loading) return <Skeleton />
   if (erro) return (
     <div className="max-w-xl mx-auto text-center py-12">
@@ -99,7 +170,10 @@ export default function Resultados() {
           )}
           {isMulti && <span className="text-xs px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-400">Multi-cargo</span>}
           <button onClick={exportCSV} className="text-xs px-3 py-1.5 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-white rounded-lg transition-all">
-            Exportar CSV
+            CSV
+          </button>
+          <button onClick={exportPDF} className="text-xs px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-all">
+            PDF
           </button>
         </div>
       </div>
