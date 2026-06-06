@@ -15,6 +15,8 @@ import AdminUtilizadores from './pages/admin/AdminUtilizadores'
 import AdminGrupos from './pages/admin/AdminGrupos'
 import AdminGrupoMembros from './pages/admin/AdminGrupoMembros'
 import AdminAudit from './pages/admin/AdminAudit'
+import AdminSuporte from './pages/admin/AdminSuporte'
+import Suporte from './pages/Suporte'
 
 import NovaEleicao from './pages/admin/NovaEleicao'
 
@@ -46,6 +48,8 @@ export default function App() {
         <Route path="eleicoes/:id/resultados" element={<Resultados />} />
         <Route path="perfil" element={<Perfil />} />
         <Route path="verificar" element={<VerificarVoto />} />
+        <Route path="suporte" element={<Suporte />} />
+        <Route path="admin/suporte" element={<AdminRoute><AdminSuporte /></AdminRoute>} />
         <Route path="admin/eleicoes" element={<AdminRoute><AdminEleicoes /></AdminRoute>} />
         <Route path="admin/eleicoes/nova" element={<AdminRoute><NovaEleicao /></AdminRoute>} />
         <Route path="admin/utilizadores" element={<AdminRoute><AdminUtilizadores /></AdminRoute>} />

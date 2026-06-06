@@ -76,6 +76,16 @@ CREATE TABLE IF NOT EXISTS votos (
 
 CREATE UNIQUE INDEX IF NOT EXISTS votos_unique_voto ON votos (eleicao_id, eleitor_id, COALESCE(cargo_id, 0));
 
+CREATE TABLE IF NOT EXISTS suporte_mensagens (
+  id         SERIAL PRIMARY KEY,
+  nome       VARCHAR(150) NOT NULL,
+  email      VARCHAR(150) NOT NULL,
+  telemovel  VARCHAR(30),
+  mensagem   TEXT NOT NULL,
+  lida       BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Migrations for tables created before new columns were added
 ALTER TABLE eleicoes ADD COLUMN IF NOT EXISTS multi_cargo BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE eleicoes ADD COLUMN IF NOT EXISTS grupo_id INT;

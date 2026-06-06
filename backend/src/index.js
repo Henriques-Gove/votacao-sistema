@@ -8,6 +8,7 @@ const eleicaoRouter = require('./routes/eleicoes');
 const votoRouter = require('./routes/votos');
 const userRouter = require('./routes/users');
 const grupoRouter = require('./routes/grupos');
+const suporteRouter = require('./routes/suporte');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -24,6 +25,7 @@ app.use('/api/eleicoes', eleicaoRouter);
 app.use('/api/votos', votoRouter);
 app.use('/api/users', userRouter);
 app.use('/api/grupos', grupoRouter);
+app.use('/api/suporte', suporteRouter);
 
 // Debug migrate
 app.get('/api/debug/migrate', async (req, res) => {

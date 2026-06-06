@@ -29,11 +29,13 @@ export default function Layout() {
             <NavLink to="/" active={location.pathname === '/'}>Dashboard</NavLink>
             <NavLink to="/eleicoes" active={isActive('/eleicoes')}>Eleições</NavLink>
             <NavLink to="/verificar" active={isActive('/verificar')}>Verificar Voto</NavLink>
+            <NavLink to="/suporte" active={isActive('/suporte')}>Suporte</NavLink>
             {isAdmin && <>
               <span className="w-px h-5 bg-gray-200 dark:bg-slate-700 mx-1" />
               <NavLink to="/admin/eleicoes" active={isActive('/admin/eleicoes')}>Gerir Eleições</NavLink>
               <NavLink to="/admin/grupos" active={isActive('/admin/grupos')}>Grupos</NavLink>
               <NavLink to="/admin/utilizadores" active={isActive('/admin/utilizadores')}>Utilizadores</NavLink>
+              <NavLink to="/admin/suporte" active={isActive('/admin/suporte')}>Suporte</NavLink>
               <NavLink to="/admin/audit" active={isActive('/admin/audit')}>Auditoria</NavLink>
             </>}
           </nav>
@@ -83,12 +85,14 @@ export default function Layout() {
           <NavLink to="/" active={location.pathname === '/'}>Dashboard</NavLink>
           <NavLink to="/eleicoes" active={isActive('/eleicoes')}>Eleições</NavLink>
           <NavLink to="/verificar" active={isActive('/verificar')}>Verificar</NavLink>
+          <NavLink to="/suporte" active={isActive('/suporte')}>Suporte</NavLink>
           <NavLink to="/perfil" active={isActive('/perfil')}>Perfil</NavLink>
           {isAdmin && <>
             <span className="w-px h-5 bg-gray-200 dark:bg-slate-700 self-center mx-0.5" />
             <NavLink to="/admin/eleicoes" active={isActive('/admin/eleicoes')}>Gerir</NavLink>
             <NavLink to="/admin/grupos" active={isActive('/admin/grupos')}>Grupos</NavLink>
             <NavLink to="/admin/utilizadores" active={isActive('/admin/utilizadores')}>Users</NavLink>
+            <NavLink to="/admin/suporte" active={isActive('/admin/suporte')}>Suporte</NavLink>
             <NavLink to="/admin/audit" active={isActive('/admin/audit')}>Auditoria</NavLink>
           </>}
         </div>
