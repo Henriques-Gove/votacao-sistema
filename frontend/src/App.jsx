@@ -7,6 +7,7 @@ import Eleicoes from './pages/Eleicoes'
 import DetalheEleicao from './pages/DetalheEleicao'
 import Resultados from './pages/Resultados'
 import Perfil from './pages/Perfil'
+import VerificarVoto from './pages/VerificarVoto'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import AdminEleicoes from './pages/admin/AdminEleicoes'
@@ -14,6 +15,7 @@ import AdminUtilizadores from './pages/admin/AdminUtilizadores'
 import AdminGrupos from './pages/admin/AdminGrupos'
 import AdminGrupoMembros from './pages/admin/AdminGrupoMembros'
 import AdminAudit from './pages/admin/AdminAudit'
+import AdminDashboard from './pages/admin/AdminDashboard'
 import NovaEleicao from './pages/admin/NovaEleicao'
 
 function PrivateRoute({ children }) {
@@ -43,12 +45,14 @@ export default function App() {
         <Route path="eleicoes/:id" element={<DetalheEleicao />} />
         <Route path="eleicoes/:id/resultados" element={<Resultados />} />
         <Route path="perfil" element={<Perfil />} />
+        <Route path="verificar" element={<VerificarVoto />} />
         <Route path="admin/eleicoes" element={<AdminRoute><AdminEleicoes /></AdminRoute>} />
         <Route path="admin/eleicoes/nova" element={<AdminRoute><NovaEleicao /></AdminRoute>} />
         <Route path="admin/utilizadores" element={<AdminRoute><AdminUtilizadores /></AdminRoute>} />
         <Route path="admin/grupos" element={<AdminRoute><AdminGrupos /></AdminRoute>} />
         <Route path="admin/grupos/:id" element={<AdminRoute><AdminGrupoMembros /></AdminRoute>} />
         <Route path="admin/audit" element={<AdminRoute><AdminAudit /></AdminRoute>} />
+        <Route path="admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

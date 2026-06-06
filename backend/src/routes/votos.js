@@ -39,9 +39,13 @@ router.post('/', authMiddleware, async (req, res) => {
     if (jaVotou.length) return res.status(409).json({ message: 'Já votou neste cargo' });
 
     const token = crypto.randomBytes(32).toString('hex');
+    const hashVoto = tipo === 'candidato' && candidato_id
+      ? crypto.createHmac('sha256', token).update(String(candidato_id)).digest('hex')
+      : null;
+
     await db.query(
-      'INSERT INTO votos (eleicao_id, eleitor_id, cargo_id, candidato_id, tipo_voto, token_unico) VALUES ($1,$2,$3,$4,$5,$6)',
-      [eleicao_id, req.user.id, cargoVoto, candidato_id || null, tipo, token]
+      'INSERT INTO votos (eleicao_id, eleitor_id, cargo_id, candidato_id, tipo_voto, token_unico, hash_voto) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+      [eleicao_id, req.user.id, cargoVoto, candidato_id || null, tipo, token, hashVoto]
     );
 
     res.json({ message: 'Voto registado com sucesso', token_voto: token });
@@ -53,10 +57,38 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
+router.post('/verificar', authMiddleware, async (req, res) => {
+  const { token_voto, candidato_id } = req.body;
+  if (!token_voto || !candidato_id)
+    return res.status(400).json({ message: 'Token e candidato são obrigatórios' });
+
+  try {
+    const { rows } = await db.query(
+      'SELECT id, eleicao_id, candidato_id, hash_voto, tipo_voto FROM votos WHERE token_unico = $1 AND eleitor_id = $2',
+      [token_voto, req.user.id]
+    );
+    if (!rows.length)
+      return res.json({ valido: false, message: 'Voto não encontrado com este token' });
+
+    const v = rows[0];
+    const hashEsperado = crypto.createHmac('sha256', token_voto).update(String(candidato_id)).digest('hex');
+
+    if (v.hash_voto && v.hash_voto === hashEsperado) {
+      return res.json({ valido: true, message: 'Voto confirmado! O seu voto foi contado correctamente.' });
+    }
+
+    res.json({ valido: false, message: 'O token não corresponde a este candidato' });
+  } catch (e) {
+    console.error('ERRO VERIFICAR:', e);
+    res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
 router.get('/meus', authMiddleware, async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT v.eleicao_id, v.cargo_id, v.token_unico, v.tipo_voto, v.created_at, e.titulo, cr.nome as cargo_nome
+      `SELECT v.eleicao_id, v.cargo_id, v.token_unico, v.hash_voto, v.tipo_voto, v.created_at,
+              e.titulo, cr.nome as cargo_nome
        FROM votos v
        JOIN eleicoes e ON e.id = v.eleicao_id
        LEFT JOIN cargos cr ON cr.id = v.cargo_id

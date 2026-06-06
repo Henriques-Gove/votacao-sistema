@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS votos (
   candidato_id INT,
   tipo_voto    VARCHAR(20) NOT NULL DEFAULT 'candidato',
   token_unico  VARCHAR(64) NOT NULL UNIQUE,
+  hash_voto    VARCHAR(64),
   created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (eleicao_id)   REFERENCES eleicoes(id)   ON DELETE CASCADE,
   FOREIGN KEY (eleitor_id)   REFERENCES users(id),

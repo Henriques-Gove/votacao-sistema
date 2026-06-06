@@ -1,6 +1,8 @@
-import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom'
+import { Outlet, useNavigate, useLocation, Link, useOutlet } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
+import AnimatedPage from './AnimatedPage'
 
 export default function Layout() {
   const { user, logout, isAdmin } = useAuth()
@@ -21,7 +23,9 @@ export default function Layout() {
           <nav className="hidden md:flex items-center gap-1">
             <NavLink to="/" active={location.pathname === '/'} theme={theme}>Dashboard</NavLink>
             <NavLink to="/eleicoes" active={isActive('/eleicoes')} theme={theme}>Eleições</NavLink>
+            <NavLink to="/verificar" active={isActive('/verificar')} theme={theme}>Verificar Voto</NavLink>
             {isAdmin && <>
+              <NavLink to="/admin" active={location.pathname === '/admin'} theme={theme}>Dashboard</NavLink>
               <NavLink to="/admin/eleicoes" active={isActive('/admin/eleicoes')} theme={theme}>Gerir Eleições</NavLink>
               <NavLink to="/admin/grupos" active={isActive('/admin/grupos')} theme={theme}>Grupos</NavLink>
               <NavLink to="/admin/utilizadores" active={isActive('/admin/utilizadores')} theme={theme}>Utilizadores</NavLink>
@@ -65,7 +69,11 @@ export default function Layout() {
       </header>
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
-        <Outlet />
+        <AnimatePresence mode="wait">
+          <AnimatedPage key={location.pathname}>
+            <Outlet />
+          </AnimatedPage>
+        </AnimatePresence>
       </main>
     </div>
   )
