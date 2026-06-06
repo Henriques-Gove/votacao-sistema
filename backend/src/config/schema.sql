@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   otp_expires_at TIMESTAMP,
   reset_token    VARCHAR(64),
   reset_expires  TIMESTAMP,
+  foto           TEXT,
   verified       BOOLEAN NOT NULL DEFAULT FALSE,
   created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -47,7 +47,16 @@ export default function Layout() {
                 </svg>
               )}
             </button>
-            <Link to="/perfil" className="text-sm text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hidden md:block">{user?.nome}</Link>
+            <Link to="/perfil" className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hidden md:block">
+              {user?.foto ? (
+                <img src={user.foto} className="w-6 h-6 rounded-full object-cover" alt="" />
+              ) : (
+                <span className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-400 inline-flex items-center justify-center text-xs font-bold">
+                  {user?.nome?.charAt(0).toUpperCase() || '?'}
+                </span>
+              )}
+              {user?.nome}
+            </Link>
             {isAdmin && <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-medium">Admin</span>}
             <button onClick={logout} className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
               Sair

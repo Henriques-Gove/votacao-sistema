@@ -154,13 +154,36 @@ router.post('/login', async (req, res) => {
 router.get('/me', require('../middleware/auth').authMiddleware, async (req, res) => {
   try {
     const { rows } = await db.query(
-      'SELECT id, nome, email, role FROM users WHERE id = $1',
+      'SELECT id, nome, email, role, foto FROM users WHERE id = $1',
       [req.user.id]
     );
     res.json(rows[0]);
   } catch (e) {
     console.error('ERRO ME:', e);
     res.status(500).json({ message: 'Erro interno do servidor', error: e.message });
+  }
+});
+
+router.put('/foto', require('../middleware/auth').authMiddleware, async (req, res) => {
+  const { foto } = req.body;
+  if (!foto) return res.status(400).json({ message: 'Foto é obrigatória' });
+  if (foto.length > 500000) return res.status(400).json({ message: 'Imagem muito grande (máx 500KB)' });
+  try {
+    await db.query('UPDATE users SET foto = $1 WHERE id = $2', [foto, req.user.id]);
+    res.json({ message: 'Foto actualizada', foto });
+  } catch (e) {
+    console.error('ERRO FOTO:', e);
+    res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
+router.delete('/foto', require('../middleware/auth').authMiddleware, async (req, res) => {
+  try {
+    await db.query('UPDATE users SET foto = NULL WHERE id = $1', [req.user.id]);
+    res.json({ message: 'Foto removida' });
+  } catch (e) {
+    console.error('ERRO REMOVER FOTO:', e);
+    res.status(500).json({ message: 'Erro interno' });
   }
 });
 

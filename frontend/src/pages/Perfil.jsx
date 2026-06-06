@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import api from '@/api/client'
 import toast from 'react-hot-toast'
 
 export default function Perfil() {
-  const { user, login } = useAuth()
-  const [nome, setNome]     = useState('')
-  const [email, setEmail]   = useState('')
+  const { user, login, refreshUser } = useAuth()
+  const fileRef = useRef()
+  const [foto, setFoto]           = useState(null)
+  const [nome, setNome]           = useState('')
+  const [email, setEmail]         = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword]         = useState('')
   const [meusVotos, setMeusVotos] = useState([])
@@ -16,9 +18,35 @@ export default function Perfil() {
     if (user) {
       setNome(user.nome)
       setEmail(user.email)
+      setFoto(user.foto || null)
     }
     api.get('/votos/meus').then(setMeusVotos).catch(() => {})
   }, [user])
+
+  async function uploadFoto(file) {
+    if (!file) return
+    if (file.size > 500000) return toast.error('Imagem muito grande (máx 500KB)')
+    const reader = new FileReader()
+    reader.onload = async () => {
+      const base64 = reader.result
+      try {
+        await api.put('/auth/foto', { foto: base64 })
+        setFoto(base64)
+        refreshUser()
+        toast.success('Foto actualizada')
+      } catch (e) { toast.error(e.message) }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  async function removerFoto() {
+    try {
+      await api.delete('/auth/foto')
+      setFoto(null)
+      refreshUser()
+      toast.success('Foto removida')
+    } catch (e) { toast.error(e.message) }
+  }
 
   async function saveProfile() {
     if (!nome.trim()) return toast.error('Nome é obrigatório')
@@ -50,6 +78,35 @@ export default function Perfil() {
       <p className="text-gray-500 dark:text-slate-400 text-sm mb-8">Gerir os seus dados pessoais</p>
 
       <div className="flex flex-col gap-6 mb-8">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-200 dark:border-slate-700 flex flex-col gap-4">
+          <h3 className="font-semibold text-gray-900 dark:text-white">Fotografia</h3>
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-slate-700 overflow-hidden flex-shrink-0">
+              {foto ? (
+                <img src={foto} alt="foto" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-slate-500 text-xl font-bold">
+                  {user?.nome?.charAt(0).toUpperCase() || '?'}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => fileRef.current?.click()}
+                className="text-xs px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all">
+                {foto ? 'Alterar' : 'Adicionar'} Foto
+              </button>
+              {foto && (
+                <button onClick={removerFoto}
+                  className="text-xs px-3 py-1.5 bg-red-100 dark:bg-red-900/50 hover:bg-red-600 text-red-700 dark:text-red-400 hover:text-white border border-red-300 dark:border-red-700 rounded-lg transition-all">
+                  Remover
+                </button>
+              )}
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => uploadFoto(e.target.files[0])} />
+          </div>
+          <p className="text-xs text-gray-400 dark:text-slate-500">A foto pode ser tirada com a câmara do telemóvel. Máx 500KB.</p>
+        </div>
+
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-200 dark:border-slate-700 flex flex-col gap-4">
           <h3 className="font-semibold text-gray-900 dark:text-white">Informação Pessoal</h3>
           <Field label="Nome">
