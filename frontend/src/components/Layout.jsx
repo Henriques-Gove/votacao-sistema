@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import AnimatedPage from './AnimatedPage'
+import InstallButton from './InstallButton'
 
 export default function Layout() {
   const { user, logout, isAdmin } = useAuth()
@@ -101,6 +102,7 @@ export default function Layout() {
           </AnimatedPage>
         </AnimatePresence>
       </main>
+      <InstallButton />
     </div>
   )
 }
