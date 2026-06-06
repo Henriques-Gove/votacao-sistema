@@ -61,6 +61,15 @@ app.get('/api/debug/migrate', async (req, res) => {
 app.post('/api/seed', async (req, res) => {
   const crypto = require('crypto');
   try {
+    // Limpar dados anteriores
+    await db.query('DELETE FROM votos');
+    await db.query('DELETE FROM candidatos');
+    await db.query('DELETE FROM cargos');
+    await db.query('DELETE FROM eleicoes');
+    await db.query("DELETE FROM users WHERE role = 'eleitor'");
+    await db.query('DELETE FROM audit_log');
+    await db.query('DELETE FROM suporte_mensagens');
+
     const hash = await bcrypt.hash('Teste@123', 10);
     const eleitores = [
       ['Maria Silva', 'maria@teste.com'],
