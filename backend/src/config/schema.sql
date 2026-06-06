@@ -44,6 +44,6 @@ CREATE TABLE IF NOT EXISTS votos (
 );
 
 INSERT INTO users (nome, email, password, role, verified)
-SELECT 'Administrador', 'admin@votacao.mz',
-       '$2a$10$ICSTBIBpTdNz7B1IttNInebkqKfxnO3CRY2KLUjkVkqGp3Z1Y57UK', 'admin', TRUE
-WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@votacao.mz');
+VALUES ('Administrador', 'admin@votacao.mz',
+        '$2a$10$ICSTBIBpTdNz7B1IttNInebkqKfxnO3CRY2KLUjkVkqGp3Z1Y57UK', 'admin', TRUE)
+ON CONFLICT (email) DO UPDATE SET password = EXCLUDED.password, role = 'admin', verified = TRUE;
