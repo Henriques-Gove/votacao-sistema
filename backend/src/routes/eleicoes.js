@@ -25,6 +25,8 @@ async function autoUpdateStatus() {
 const MINUTO = 60 * 1000;
 setInterval(autoUpdateStatus, MINUTO);
 
+module.exports.autoUpdateStatus = autoUpdateStatus;
+
 router.get('/', authMiddleware, async (req, res) => {
   try {
     await autoUpdateStatus();
@@ -52,7 +54,7 @@ router.get('/', authMiddleware, async (req, res) => {
     res.json(rows);
   } catch (e) {
     console.error('Erro listar eleições:', e);
-    res.status(500).json({ message: 'Erro interno' });
+    res.status(500).json({ message: 'Erro interno: ' + e.message });
   }
 });
 
@@ -174,7 +176,7 @@ router.post('/', adminMiddleware, async (req, res) => {
     res.status(201).json({ message: 'Eleição criada', id: eleicaoId });
   } catch (e) {
     console.error('Erro ao criar eleição:', e);
-    res.status(500).json({ message: 'Erro interno ao criar eleição' });
+    res.status(500).json({ message: 'Erro interno ao criar eleição: ' + e.message });
   }
 });
 
