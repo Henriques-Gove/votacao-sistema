@@ -78,6 +78,10 @@ export default function AdminEleicoes() {
                     className="text-xs px-3 py-1.5 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-white rounded-lg transition-all">
                     Resultados
                   </Link>
+                  <Link to="/admin/audit"
+                    className="text-xs px-3 py-1.5 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-white rounded-lg transition-all">
+                    Votantes
+                  </Link>
                   <button onClick={() => eliminar(e.id)}
                     className="text-xs px-3 py-1.5 bg-red-100 dark:bg-red-900/50 hover:bg-red-600 text-red-700 dark:text-red-400 hover:text-white border border-red-300 dark:border-red-700 rounded-lg transition-all">
                     Eliminar

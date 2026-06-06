@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import api from '@/api/client'
@@ -95,6 +96,9 @@ export default function Login() {
               <Btn onClick={tab === 'login' ? fazerLogin : fazerRegisto} loading={loading}>
                 {tab === 'login' ? 'Entrar' : 'Criar Conta'}
               </Btn>
+              {tab === 'login' && (
+                <Link to="/forgot-password" className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 text-center">Esqueceu-se da senha?</Link>
+              )}
             </div>
           </>
         ) : (

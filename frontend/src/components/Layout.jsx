@@ -25,6 +25,7 @@ export default function Layout() {
               <NavLink to="/admin/eleicoes" active={isActive('/admin/eleicoes')} theme={theme}>Gerir Eleições</NavLink>
               <NavLink to="/admin/grupos" active={isActive('/admin/grupos')} theme={theme}>Grupos</NavLink>
               <NavLink to="/admin/utilizadores" active={isActive('/admin/utilizadores')} theme={theme}>Utilizadores</NavLink>
+              <NavLink to="/admin/audit" active={isActive('/admin/audit')} theme={theme}>Auditoria</NavLink>
             </>}
           </nav>
 
@@ -42,7 +43,7 @@ export default function Layout() {
                 </svg>
               )}
             </button>
-            <span className="text-sm text-gray-500 dark:text-slate-400 hidden md:block">{user?.nome}</span>
+            <Link to="/perfil" className="text-sm text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hidden md:block">{user?.nome}</Link>
             {isAdmin && <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-medium">Admin</span>}
             <button onClick={logout} className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
               Sair
@@ -53,10 +54,12 @@ export default function Layout() {
         <div className="flex md:hidden gap-1 px-4 pb-3 overflow-x-auto">
           <NavLink to="/" active={location.pathname === '/'} theme={theme}>Dashboard</NavLink>
           <NavLink to="/eleicoes" active={isActive('/eleicoes')} theme={theme}>Eleições</NavLink>
+          <NavLink to="/perfil" active={isActive('/perfil')} theme={theme}>Perfil</NavLink>
           {isAdmin && <>
             <NavLink to="/admin/eleicoes" active={isActive('/admin/eleicoes')} theme={theme}>Gerir</NavLink>
             <NavLink to="/admin/grupos" active={isActive('/admin/grupos')} theme={theme}>Grupos</NavLink>
             <NavLink to="/admin/utilizadores" active={isActive('/admin/utilizadores')} theme={theme}>Users</NavLink>
+            <NavLink to="/admin/audit" active={isActive('/admin/audit')} theme={theme}>Audit</NavLink>
           </>}
         </div>
       </header>

@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS users (
   role           VARCHAR(20) NOT NULL DEFAULT 'eleitor',
   otp_code       VARCHAR(6),
   otp_expires_at TIMESTAMP,
+  reset_token    VARCHAR(64),
+  reset_expires  TIMESTAMP,
   verified       BOOLEAN NOT NULL DEFAULT FALSE,
   created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -64,14 +66,14 @@ VALUES ('Administrador', 'admin@votacao.mz',
 ON CONFLICT (email) DO UPDATE SET password = EXCLUDED.password, role = 'admin', verified = TRUE;
 
 INSERT INTO grupos (nome, descricao) VALUES
-  ('Turma A', '1º Ano - Turma A'),
-  ('Turma B', '1º Ano - Turma B'),
-  ('Turma C', '2º Ano - Turma C'),
-  ('Turma D', '2º Ano - Turma D'),
-  ('Turma E', '3º Ano - Turma E'),
-  ('Turma F', '3º Ano - Turma F'),
-  ('Turma G', '4º Ano - Turma G'),
-  ('Turma H', '4º Ano - Turma H'),
-  ('Professores', 'Corpo docente'),
-  ('Funcionários', 'Pessoal administrativo')
+  ('Direcção da Escola', 'Director, subdirectores e chefes de departamento'),
+  ('Professores', 'Corpo docente da escola'),
+  ('Funcionários', 'Pessoal administrativo e auxiliar'),
+  ('Associação de Pais', 'Representantes dos encarregados de educação'),
+  ('Conselho Escolar', 'Membros do conselho escolar'),
+  ('Delegados de Turma', 'Delegados e subdelegados de todas as turmas'),
+  ('Alunos 1º Ciclo', 'Alunos do 1º ao 4º ano'),
+  ('Alunos 2º Ciclo', 'Alunos do 5º ao 6º ano'),
+  ('Alunos 3º Ciclo', 'Alunos do 7º ao 9º ano'),
+  ('Alunos Secundário', 'Alunos do 10º ao 12º ano')
 ON CONFLICT (nome) DO NOTHING;

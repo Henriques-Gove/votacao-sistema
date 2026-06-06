@@ -164,4 +164,86 @@ router.get('/me', require('../middleware/auth').authMiddleware, async (req, res)
   }
 });
 
+router.put('/profile', require('../middleware/auth').authMiddleware, async (req, res) => {
+  const { nome, email } = req.body;
+  try {
+    if (email && email !== req.user.email) {
+      const { rows } = await db.query('SELECT id FROM users WHERE email = $1 AND id != $2', [email, req.user.id]);
+      if (rows.length) return res.status(409).json({ message: 'Email já usado' });
+    }
+    const { rows } = await db.query(
+      'UPDATE users SET nome = COALESCE($1, nome), email = COALESCE($2, email) WHERE id = $3 RETURNING id, nome, email, role',
+      [nome || null, email || null, req.user.id]
+    );
+    const token = require('jsonwebtoken').sign(
+      { id: rows[0].id, email: rows[0].email, role: rows[0].role, nome: rows[0].nome },
+      process.env.JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+    res.json({ user: rows[0], access_token: token });
+  } catch (e) {
+    console.error('ERRO UPDATE PROFILE:', e);
+    res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
+router.put('/password', require('../middleware/auth').authMiddleware, async (req, res) => {
+  const { current_password, new_password } = req.body;
+  if (!current_password || !new_password)
+    return res.status(400).json({ message: 'Senha actual e nova são obrigatórias' });
+  if (new_password.length < 6)
+    return res.status(400).json({ message: 'Nova senha deve ter mínimo 6 caracteres' });
+  try {
+    const { rows } = await db.query('SELECT password FROM users WHERE id = $1', [req.user.id]);
+    if (!await require('bcryptjs').compare(current_password, rows[0].password))
+      return res.status(401).json({ message: 'Senha actual incorrecta' });
+    const hash = await require('bcryptjs').hash(new_password, 10);
+    await db.query('UPDATE users SET password = $1 WHERE id = $2', [hash, req.user.id]);
+    res.json({ message: 'Senha alterada com sucesso' });
+  } catch (e) {
+    console.error('ERRO CHANGE PASSWORD:', e);
+    res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: 'Email é obrigatório' });
+  try {
+    const { rows } = await db.query('SELECT id, nome FROM users WHERE email = $1', [email]);
+    if (!rows.length) return res.json({ message: 'Se o email existir, receberá instruções' });
+    const token = require('crypto').randomBytes(32).toString('hex');
+    const exp = new Date(Date.now() + 60 * 60 * 1000);
+    await db.query('UPDATE users SET reset_token = $1, reset_expires = $2 WHERE id = $3', [token, exp, rows[0].id]);
+    console.log('=== SIMULAÇÃO RESET PASSWORD ===');
+    console.log('Para:', email);
+    console.log('Link: https://votacao-frontend.onrender.com/reset-password?token=' + token + '&email=' + email);
+    res.json({ message: 'Se o email existir, receberá instruções' });
+  } catch (e) {
+    console.error('ERRO FORGOT PASSWORD:', e);
+    res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
+router.post('/reset-password', async (req, res) => {
+  const { email, token, password } = req.body;
+  if (!email || !token || !password)
+    return res.status(400).json({ message: 'Email, token e nova senha são obrigatórios' });
+  if (password.length < 6)
+    return res.status(400).json({ message: 'Senha deve ter mínimo 6 caracteres' });
+  try {
+    const { rows } = await db.query(
+      'SELECT id FROM users WHERE email = $1 AND reset_token = $2 AND reset_expires > NOW()',
+      [email, token]
+    );
+    if (!rows.length) return res.status(400).json({ message: 'Link inválido ou expirado' });
+    const hash = await require('bcryptjs').hash(password, 10);
+    await db.query('UPDATE users SET password = $1, reset_token = NULL, reset_expires = NULL WHERE id = $2', [hash, rows[0].id]);
+    res.json({ message: 'Senha redefinida com sucesso' });
+  } catch (e) {
+    console.error('ERRO RESET PASSWORD:', e);
+    res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
 module.exports = router;

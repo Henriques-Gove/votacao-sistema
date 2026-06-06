@@ -28,6 +28,7 @@ router.get('/', authMiddleware, async (req, res) => {
     const { rows } = await db.query(sql, params);
     res.json(rows);
   } catch (e) {
+    console.error('Erro listar eleições:', e);
     res.status(500).json({ message: 'Erro interno' });
   }
 });
@@ -62,6 +63,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
       total_inscritos: totalInscritos[0].total,
     });
   } catch (e) {
+    console.error('Erro buscar eleição:', e);
     res.status(500).json({ message: 'Erro interno' });
   }
 });
@@ -72,24 +74,29 @@ router.post('/', adminMiddleware, async (req, res) => {
     return res.status(400).json({ message: 'Título, início e fim são obrigatórios' });
   if (!candidatos || candidatos.length < 2)
     return res.status(400).json({ message: 'São necessários pelo menos 2 candidatos' });
+  if (candidatos.some(c => !c.nome || !c.nome.trim()))
+    return res.status(400).json({ message: 'Todos os candidatos devem ter um nome' });
+  if (new Date(inicio) >= new Date(fim))
+    return res.status(400).json({ message: 'A data de fim deve ser posterior à data de início' });
 
   try {
     const { rows } = await db.query(
       'INSERT INTO eleicoes (titulo, descricao, inicio, fim, criado_por, grupo_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-      [titulo, descricao || '', inicio, fim, req.user.id, grupo_id || null]
+      [titulo.trim(), descricao || '', inicio, fim, req.user.id, grupo_id || null]
     );
     const eleicaoId = rows[0].id;
 
     for (const c of candidatos) {
       await db.query(
         'INSERT INTO candidatos (eleicao_id, nome, descricao) VALUES ($1,$2,$3)',
-        [eleicaoId, c.nome, c.descricao || '']
+        [eleicaoId, c.nome.trim(), c.descricao || '']
       );
     }
 
     res.status(201).json({ message: 'Eleição criada', id: eleicaoId });
   } catch (e) {
-    res.status(500).json({ message: 'Erro interno' });
+    console.error('Erro ao criar eleição:', e);
+    res.status(500).json({ message: 'Erro interno ao criar eleição' });
   }
 });
 
@@ -102,6 +109,7 @@ router.put('/:id', adminMiddleware, async (req, res) => {
     );
     res.json({ message: 'Eleição actualizada' });
   } catch (e) {
+    console.error('Erro actualizar eleição:', e);
     res.status(500).json({ message: 'Erro interno' });
   }
 });
@@ -111,6 +119,7 @@ router.delete('/:id', adminMiddleware, async (req, res) => {
     await db.query('DELETE FROM eleicoes WHERE id = $1', [req.params.id]);
     res.json({ message: 'Eleição eliminada' });
   } catch (e) {
+    console.error('Erro eliminar eleição:', e);
     res.status(500).json({ message: 'Erro interno' });
   }
 });
@@ -163,6 +172,24 @@ router.get('/:id/resultados', authMiddleware, async (req, res) => {
       abstencao: totalInsc - totalVotos,
     });
   } catch (e) {
+    console.error('Erro resultados:', e);
+    res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
+router.get('/:id/votantes', adminMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT u.id, u.nome, u.email, v.created_at as votou_em, v.tipo_voto
+       FROM votos v
+       JOIN users u ON u.id = v.eleitor_id
+       WHERE v.eleicao_id = $1
+       ORDER BY v.created_at`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (e) {
+    console.error('Erro votantes:', e);
     res.status(500).json({ message: 'Erro interno' });
   }
 });

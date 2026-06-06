@@ -24,19 +24,34 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Olá, {user?.nome} 👋</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Olá, {user?.nome}</h2>
       <p className="text-gray-500 dark:text-slate-400 text-sm mb-8">Bem-vindo ao sistema de votação electrónica</p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <StatCard label="Eleições Activas" value={loading ? '...' : activas} color="indigo" />
-        <StatCard label="Já Votou Em" value={loading ? '...' : meusVotos.length} color="green" />
-        <StatCard label="Eleições Encerradas" value={loading ? '...' : encerradas} color="slate" />
-      </div>
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          {[1,2,3].map(i => (
+            <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-200 dark:border-slate-700 animate-pulse">
+              <div className="h-3 w-24 bg-gray-200 dark:bg-slate-700 rounded mb-3" />
+              <div className="h-9 w-12 bg-gray-200 dark:bg-slate-700 rounded" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <StatCard label="Eleições Activas" value={activas} color="indigo" />
+          <StatCard label="Já Votou Em" value={meusVotos.length} color="green" />
+          <StatCard label="Eleições Encerradas" value={encerradas} color="slate" />
+        </div>
+      )}
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-200 dark:border-slate-700">
         <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Eleições Disponíveis</h3>
         {loading ? (
-          <p className="text-gray-500 dark:text-slate-400 text-sm">A carregar...</p>
+          <div className="flex flex-col gap-3">
+            {[1,2].map(i => (
+              <div key={i} className="h-16 bg-gray-200 dark:bg-slate-700 rounded-xl animate-pulse" />
+            ))}
+          </div>
         ) : eleicoes.filter(e => e.status === 'activa').length === 0 ? (
           <p className="text-gray-500 dark:text-slate-400 text-sm">Nenhuma eleição activa de momento.</p>
         ) : (
