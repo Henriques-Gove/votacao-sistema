@@ -76,6 +76,11 @@ CREATE TABLE IF NOT EXISTS votos (
 
 CREATE UNIQUE INDEX IF NOT EXISTS votos_unique_voto ON votos (eleicao_id, eleitor_id, COALESCE(cargo_id, 0));
 
+-- Migrations for tables created before new columns were added
+ALTER TABLE eleicoes ADD COLUMN IF NOT EXISTS multi_cargo BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE eleicoes ADD COLUMN IF NOT EXISTS grupo_id INT REFERENCES grupos(id);
+ALTER TABLE users    ADD COLUMN IF NOT EXISTS foto TEXT;
+
 INSERT INTO users (nome, email, password, role, verified)
 VALUES ('Administrador', 'admin@votacao.mz',
         '$2a$10$ICSTBIBpTdNz7B1IttNInebkqKfxnO3CRY2KLUjkVkqGp3Z1Y57UK', 'admin', TRUE)
