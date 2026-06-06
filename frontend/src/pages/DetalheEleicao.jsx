@@ -42,11 +42,6 @@ export default function DetalheEleicao() {
   async function votar() {
     const isMulti = eleicao.cargos && eleicao.cargos.length > 0
 
-    if (isMulti) {
-      const semVoto = eleicao.cargos.some(c => !selecionados[c.id] || selecionados[c.id].length === 0)
-      if (semVoto) return toast.error('Vote em todos os cargos antes de confirmar')
-    }
-
     const nulos = isMulti
       ? eleicao.cargos.filter(c => selecionados[c.id]?.length > 1)
       : (selecionados['geral']?.length > 1 ? ['geral'] : [])
