@@ -42,7 +42,7 @@ async function enviarOtp(email, nome, otp) {
   console.log('=== SIMULAÇÃO DE EMAIL ===');
   console.log('Para:', email);
   console.log('OTP:', otp);
-  return true;
+  return { enviado: false, otp };
 }
 
 module.exports = { enviarOtp };

@@ -14,6 +14,7 @@ export default function Login() {
   const [showOtp, setShowOtp]     = useState(false)
   const [pendingEmail, setPendingEmail] = useState('')
   const [loading, setLoading]     = useState(false)
+  const [noEmailMode, setNoEmailMode] = useState(false)
 
   async function fazerLogin() {
     if (!email || !password) return toast.error('Preencha todos os campos')
@@ -29,8 +30,16 @@ export default function Login() {
     if (!nome || !email || !password) return toast.error('Preencha todos os campos')
     setLoading(true)
     try {
-      await api.post('/auth/register', { nome, email, password })
-      setPendingEmail(email)
+      const res = await api.post('/auth/register', { nome, email, password })
+      setPendingEmail(res.pending_email || email)
+      if (res.otp_code) {
+        setNoEmailMode(true)
+        setOtpCode(res.otp_code)
+        const verify = await api.post('/auth/verify-otp', { email: res.pending_email || email, otp_code: res.otp_code })
+        login(verify.access_token, verify.user)
+        toast.success('Conta criada e verificada!')
+        return
+      }
       setShowOtp(true)
       toast.success('Código enviado para o email!')
     } catch (e) { toast.error(e.message) }
@@ -136,12 +145,23 @@ export default function Login() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 0 0 1.183 1.981l6.478 3.488m8.839 2.51-4.66-2.51m0 0-1.023-.55a2.25 2.25 0 0 0-2.134 0l-1.022.55m0 0-4.661 2.51m16.5 1.615a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V8.844a2.25 2.25 0 0 1 1.183-1.98l7.5-4.04a2.25 2.25 0 0 1 2.134 0l7.5 4.04a2.25 2.25 0 0 1 1.183 1.98V19.5Z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-gray-900 dark:text-white text-lg">Verifique o seu Email</h3>
-              <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
-                Código enviado para<br />
-                <strong className="text-indigo-600 dark:text-indigo-400">{pendingEmail}</strong>
-              </p>
+              <h3 className="font-bold text-gray-900 dark:text-white text-lg">{noEmailMode ? 'Código de Verificação' : 'Verifique o seu Email'}</h3>
+              {noEmailMode ? (
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+                  O seu código de verificação:
+                </p>
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+                  Código enviado para<br />
+                  <strong className="text-indigo-600 dark:text-indigo-400">{pendingEmail}</strong>
+                </p>
+              )}
             </div>
+            {noEmailMode && (
+              <div className="bg-gray-100 dark:bg-slate-900 rounded-xl py-4 px-2 text-center border border-gray-200 dark:border-slate-700">
+                <span className="text-3xl tracking-[0.4em] font-bold text-indigo-600 dark:text-indigo-400 select-all">{otpCode}</span>
+              </div>
+            )}
             <Field label="Código de Verificação (6 dígitos)">
               <Input value={otpCode} onChange={setOtpCode} placeholder="000000" maxLength={6} onEnter={verificarOtp} />
             </Field>
@@ -149,9 +169,11 @@ export default function Login() {
               className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-500/30">
               {loading ? 'A verificar...' : 'Verificar Código'}
             </button>
-            <button onClick={reenviarOtp} className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 text-center hover:underline">
-              Reenviar código
-            </button>
+            {!noEmailMode && (
+              <button onClick={reenviarOtp} className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 text-center hover:underline">
+                Reenviar código
+              </button>
+            )}
           </div>
         )}
 

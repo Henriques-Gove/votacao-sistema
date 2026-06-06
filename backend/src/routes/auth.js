@@ -37,8 +37,15 @@ router.post('/register', async (req, res) => {
       [nome, email, hash, otp, exp]
     );
 
-    await enviarOtp(email, nome, otp);
+    const result = await enviarOtp(email, nome, otp);
 
+    if (result && result.enviado === false) {
+      return res.json({
+        message: 'Registo efectuado. Use o código abaixo para verificar.',
+        otp_code: result.otp,
+        pending_email: email
+      });
+    }
     res.json({ message: 'Registo efectuado. Verifique o email.' });
   } catch (e) {
     console.error('ERRO REGISTER:', e);
@@ -101,8 +108,11 @@ router.post('/resend-otp', async (req, res) => {
       [otp, exp, user.id]
     );
 
-    await enviarOtp(email, user.nome, otp);
+    const result = await enviarOtp(email, user.nome, otp);
 
+    if (result && result.enviado === false) {
+      return res.json({ message: 'Código reenviado.', otp_code: result.otp });
+    }
     res.json({ message: 'Código reenviado.' });
   } catch (e) {
     console.error('ERRO RESEND OTP:', e);
