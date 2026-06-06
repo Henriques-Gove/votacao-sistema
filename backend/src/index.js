@@ -2,6 +2,8 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const db = require('./config/db');
 
 const authRouter = require('./routes/auth');
 const eleicaoRouter = require('./routes/eleicoes');
@@ -9,6 +11,8 @@ const votoRouter = require('./routes/votos');
 const userRouter = require('./routes/users');
 const grupoRouter = require('./routes/grupos');
 const suporteRouter = require('./routes/suporte');
+
+const { autoUpdateStatus } = require('./routes/eleicoes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -51,8 +55,6 @@ app.get('/api/debug/migrate', async (req, res) => {
 
 // Seed test data
 app.post('/api/seed', async (req, res) => {
-  const bcrypt = require('bcryptjs');
-  const db = require('./config/db');
   try {
     const hash = await bcrypt.hash('Teste@123', 10);
     const eleitores = [
@@ -174,9 +176,6 @@ app.use((req, res) => {
     message: 'Rota não encontrada'
   });
 });
-
-// Auto-schedule elections on startup
-const { autoUpdateStatus } = require('./routes/eleicoes');
 
 app.listen(PORT, async () => {
   console.log(`Servidor a correr em http://localhost:${PORT}`);
