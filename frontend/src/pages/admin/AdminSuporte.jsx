@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 export default function AdminSuporte() {
   const [mensagens, setMensagens] = useState([])
   const [loading, setLoading] = useState(true)
+  const [respostaText, setRespostaText] = useState({})
 
   useEffect(() => { carregar() }, [])
 
@@ -14,6 +15,17 @@ export default function AdminSuporte() {
       setMensagens(data)
     } catch (e) { toast.error(e.message) }
     finally { setLoading(false) }
+  }
+
+  async function responder(id) {
+    const resposta = respostaText[id]?.trim()
+    if (!resposta) return toast.error('Escreva uma resposta')
+    try {
+      await api.put(`/suporte/${id}/responder`, { resposta })
+      toast.success('Resposta enviada')
+      setRespostaText(p => ({ ...p, [id]: '' }))
+      carregar()
+    } catch (e) { toast.error(e.message) }
   }
 
   async function marcarLida(id) {
@@ -58,7 +70,29 @@ export default function AdminSuporte() {
                     {m.telemovel && <span>{m.telemovel}</span>}
                     <span>{new Date(m.created_at).toLocaleString('pt-PT')}</span>
                   </div>
-                  <p className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-wrap">{m.mensagem}</p>
+                  <p className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-wrap mb-3">{m.mensagem}</p>
+
+                  {m.resposta && (
+                    <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-xl p-3 mb-3">
+                      <p className="text-xs font-medium text-indigo-600 dark:text-indigo-400 mb-1">Resposta:</p>
+                      <p className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-wrap">{m.resposta}</p>
+                      {m.respondido_em && (
+                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{new Date(m.respondido_em).toLocaleString('pt-PT')}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {!m.resposta && (
+                    <div className="flex gap-2">
+                      <textarea value={respostaText[m.id] || ''} onChange={e => setRespostaText(p => ({ ...p, [m.id]: e.target.value }))}
+                        rows={2} placeholder="Escrever resposta..."
+                        className="flex-1 rounded-xl text-sm outline-none px-3 py-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white focus:border-indigo-500 resize-none" />
+                      <button onClick={() => responder(m.id)}
+                        className="self-end text-xs px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all">
+                        Enviar
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-1.5 flex-shrink-0">
                   {!m.lida && (

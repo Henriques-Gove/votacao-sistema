@@ -7,7 +7,7 @@ export default function DetalheEleicao() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [eleicao, setEleicao]             = useState(null)
-  const [votosCargo, setVotosCargo]       = useState({})
+  const [selecionados, setSelecionados]   = useState({})
   const [cargoAtual, setCargoAtual]       = useState(0)
   const [loading, setLoading]             = useState(true)
   const [voting, setVoting]               = useState(false)
@@ -16,41 +16,64 @@ export default function DetalheEleicao() {
     api.get(`/eleicoes/${id}`).then(setEleicao).catch(() => navigate('/eleicoes')).finally(() => setLoading(false))
   }, [id])
 
-  function setVoto(cargoId, tipo, candidatoId) {
-    setVotosCargo(prev => ({ ...prev, [cargoId || 'geral']: { tipo, candidatoId } }))
+  function toggleCandidato(cargoId, candidatoId) {
+    setSelecionados(prev => {
+      const key = cargoId || 'geral'
+      const arr = prev[key] || []
+      const idx = arr.indexOf(candidatoId)
+      if (idx === -1) {
+        return { ...prev, [key]: [...arr, candidatoId] }
+      }
+      return { ...prev, [key]: arr.filter(c => c !== candidatoId) }
+    })
   }
 
-  function getCargoVoto(cargoId) {
-    return votosCargo[cargoId || 'geral'] || {}
+  function getSelecionados(cargoId) {
+    return selecionados[cargoId || 'geral'] || []
+  }
+
+  function getTipoDisplay(cargoId) {
+    const arr = getSelecionados(cargoId)
+    if (arr.length === 0) return { tipo: 'branco', label: 'Em Branco' }
+    if (arr.length === 1) return { tipo: 'candidato', label: '1 Candidato' }
+    return { tipo: 'nulo', label: `${arr.length} Candidatos (NULO)` }
   }
 
   async function votar() {
     const isMulti = eleicao.cargos && eleicao.cargos.length > 0
-    if (!isMulti && !votosCargo['geral']) return toast.error('Seleccione uma opção de voto')
 
     if (isMulti) {
-      const semVoto = eleicao.cargos.some(c => !votosCargo[c.id])
+      const semVoto = eleicao.cargos.some(c => !selecionados[c.id] || selecionados[c.id].length === 0)
       if (semVoto) return toast.error('Vote em todos os cargos antes de confirmar')
     }
 
-    if (!confirm('Confirma os seus votos? Esta acção é irreversível.')) return
+    const nulos = isMulti
+      ? eleicao.cargos.filter(c => selecionados[c.id]?.length > 1)
+      : (selecionados['geral']?.length > 1 ? ['geral'] : [])
+
+    if (nulos.length > 0) {
+      if (!window.confirm('Aviso: votou em mais de um candidato num dos cargos. Este voto será registado como NULO. Deseja continuar?')) return
+    }
+
+    if (!window.confirm('Confirma os seus votos? Esta acção é irreversível.')) return
     setVoting(true)
     try {
       if (isMulti) {
         for (const cargo of eleicao.cargos) {
-          const v = votosCargo[cargo.id]
-          await api.post('/votos', {
-            eleicao_id: Number(id),
-            cargo_id: cargo.id,
-            tipo_voto: v.tipo,
-            ...(v.tipo === 'candidato' ? { candidato_id: v.candidatoId } : {}),
-          })
+          const arr = selecionados[cargo.id] || []
+          let tipo, candidato_id = null
+          if (arr.length === 0) { tipo = 'branco' }
+          else if (arr.length === 1) { tipo = 'candidato'; candidato_id = arr[0] }
+          else { tipo = 'nulo' }
+          await api.post('/votos', { eleicao_id: Number(id), cargo_id: cargo.id, tipo_voto: tipo, ...(candidato_id ? { candidato_id } : {}) })
         }
       } else {
-        const v = votosCargo['geral']
-        const payload = { eleicao_id: Number(id), tipo_voto: v.tipo }
-        if (v.tipo === 'candidato') payload.candidato_id = v.candidatoId
-        await api.post('/votos', payload)
+        const arr = selecionados['geral'] || []
+        let tipo, candidato_id = null
+        if (arr.length === 0) { tipo = 'branco' }
+        else if (arr.length === 1) { tipo = 'candidato'; candidato_id = arr[0] }
+        else { tipo = 'nulo' }
+        await api.post('/votos', { eleicao_id: Number(id), tipo_voto: tipo, ...(candidato_id ? { candidato_id } : {}) })
       }
       toast.success('Votos registados com sucesso!')
       navigate(`/eleicoes/${id}/resultados`)
@@ -146,19 +169,24 @@ export default function DetalheEleicao() {
 
           <div className="flex flex-col gap-3 mb-6">
             {candidatosCargo.map(c => {
-              const voto = getCargoVoto(c.cargo_id || 'geral')
+              const sel = getSelecionados(c.cargo_id || 'geral')
+              const checked = sel.includes(c.id)
               return (
-                <button key={c.id} onClick={() => { setVoto(c.cargo_id || 'geral', 'candidato', c.id); if (isMulti && cargoAtual < eleicao.cargos.length - 1) setCargoAtual(cargoAtual + 1) }}
+                <button key={c.id} onClick={() => toggleCandidato(c.cargo_id || 'geral', c.id)}
                   className={`w-full text-left p-4 rounded-xl border transition-all ${
-                    voto.tipo === 'candidato' && voto.candidatoId === c.id
+                    checked
                       ? 'border-indigo-500 bg-indigo-100 dark:bg-indigo-900/30'
                       : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-400 dark:hover:border-slate-500'
                   }`}>
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                      voto.tipo === 'candidato' && voto.candidatoId === c.id ? 'border-indigo-400' : 'border-gray-400 dark:border-slate-600'
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                      checked ? 'border-indigo-400 bg-indigo-400' : 'border-gray-400 dark:border-slate-600'
                     }`}>
-                      {voto.tipo === 'candidato' && voto.candidatoId === c.id && <div className="w-2.5 h-2.5 rounded-full bg-indigo-400" />}
+                      {checked && (
+                        <svg className="h-3 w-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                          <path d="M5 13l4 4L19 7"/>
+                        </svg>
+                      )}
                     </div>
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">{c.nome}</p>
@@ -168,51 +196,52 @@ export default function DetalheEleicao() {
                 </button>
               )
             })}
-
-            <button onClick={() => { setVoto(cargoAtualObj?.id || 'geral', 'branco', null); if (isMulti && cargoAtual < eleicao.cargos.length - 1) setCargoAtual(cargoAtual + 1) }}
-              className={`w-full text-left p-4 rounded-xl border transition-all ${
-                getCargoVoto(cargoAtualObj?.id || 'geral').tipo === 'branco'
-                  ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900/30'
-                  : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-400 dark:hover:border-slate-500'
-              }`}>
-              <div className="flex items-center gap-3">
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  getCargoVoto(cargoAtualObj?.id || 'geral').tipo === 'branco' ? 'border-yellow-400' : 'border-gray-400 dark:border-slate-600'
-                }`}>
-                  {getCargoVoto(cargoAtualObj?.id || 'geral').tipo === 'branco' && <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />}
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Voto em Branco</p>
-                  <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Voto válido que não escolhe nenhum candidato</p>
-                </div>
-              </div>
-            </button>
-
-            <button onClick={() => { setVoto(cargoAtualObj?.id || 'geral', 'nulo', null); if (isMulti && cargoAtual < eleicao.cargos.length - 1) setCargoAtual(cargoAtual + 1) }}
-              className={`w-full text-left p-4 rounded-xl border transition-all ${
-                getCargoVoto(cargoAtualObj?.id || 'geral').tipo === 'nulo'
-                  ? 'border-red-400 bg-red-100 dark:bg-red-900/30'
-                  : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-400 dark:hover:border-slate-500'
-              }`}>
-              <div className="flex items-center gap-3">
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  getCargoVoto(cargoAtualObj?.id || 'geral').tipo === 'nulo' ? 'border-red-400' : 'border-gray-400 dark:border-slate-600'
-                }`}>
-                  {getCargoVoto(cargoAtualObj?.id || 'geral').tipo === 'nulo' && <div className="w-2.5 h-2.5 rounded-full bg-red-400" />}
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Voto Nulo</p>
-                  <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Voto inválido (não conta como voto válido)</p>
-                </div>
-              </div>
-            </button>
           </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-gray-200 dark:border-slate-700 mb-6">
+            <p className="text-xs text-gray-400 dark:text-slate-500 mb-2">Resumo do voto para {isMulti ? cargoAtualObj?.nome : 'esta eleição'}:</p>
+            {(() => {
+              const cargoId = cargoAtualObj?.id || 'geral'
+              const arr = getSelecionados(cargoId)
+              if (arr.length === 0) return <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">Nenhum candidato seleccionado — Voto em Branco</p>
+              if (arr.length === 1) {
+                const nome = candidatosCargo.find(c => c.id === arr[0])?.nome || 'Desconhecido'
+                return <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">✓ {nome}</p>
+              }
+              return <p className="text-sm font-medium text-red-600 dark:text-red-400">⚠ Seleccionou {arr.length} candidatos — Voto NULO</p>
+            })()}
+          </div>
+
+          {!isMulti && (
+            <div className="flex flex-col gap-3 mb-6">
+              <button onClick={() => setSelecionados(prev => ({ ...prev, geral: [] }))}
+                className={`w-full text-left p-4 rounded-xl border transition-all ${
+                  (selecionados['geral']?.length || 0) === 0
+                    ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900/30'
+                    : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-400 dark:hover:border-slate-500'
+                }`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    (selecionados['geral']?.length || 0) === 0 ? 'border-yellow-400' : 'border-gray-400 dark:border-slate-600'
+                  }`}>
+                    {(selecionados['geral']?.length || 0) === 0 && <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">Voto em Branco</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Nenhum candidato seleccionado</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          )}
 
           <button onClick={votar} disabled={voting}
             className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl transition-all">
             {voting ? 'A registar votos...' : isMulti ? 'Confirmar Todos os Votos' : 'Confirmar Voto'}
           </button>
-          <p className="text-xs text-gray-400 dark:text-slate-500 text-center mt-3">O voto é confidencial e irreversível</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500 text-center mt-3">
+            0 candidatos = Branco · 1 = Normal · 2+ = Nulo · O voto é irreversível
+          </p>
         </>
       )}
     </div>

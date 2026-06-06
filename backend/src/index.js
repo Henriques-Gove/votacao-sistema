@@ -92,6 +92,23 @@ app.post('/api/seed', async (req, res) => {
     }
 
     const agora = new Date();
+    const poolNomes = [
+      'Alberto Vasco', 'Beatriz Lopes', 'Celso Mendes', 'Diana Faria',
+      'Eduardo Silva', 'Filipa Gomes', 'Gustavo Neves', 'Helena Correia',
+      'Igor Pinto', 'Joana Tavares', 'Kelvin Ramos', 'Lúcia Barbosa',
+      'Manuel Castro', 'Natália Freitas', 'Óscar Matos', 'Paula Teixeira',
+      'Rita Carvalho', 'Samuel Moreira', 'Tânia Andrade', 'Ulisses Fonseca',
+      'Vitória Melo', 'Wilson Oliveira', 'Xavier Dias', 'Yara Santos',
+      'André Lopes', 'Bruna Castro', 'Cristiano Neves', 'Daniela Faria',
+      'Érica Gomes', 'Fábio Martins', 'Gonçalo Pinto', 'Henrique Lopes',
+    ];
+
+    function randomCandidatos(min = 2, max = 4) {
+      const qtd = Math.floor(Math.random() * (max - min + 1)) + min;
+      const shuffled = [...poolNomes].sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, qtd);
+    }
+
     const eleicoes = [
       {
         titulo: 'Eleição Presidencial',
@@ -101,8 +118,8 @@ app.post('/api/seed', async (req, res) => {
         status: 'activa',
         multi_cargo: true,
         cargos: [
-          { nome: 'Presidente', candidatos: ['Alberto Vasco', 'Beatriz Lopes', 'Celso Mendes', 'Diana Faria'] },
-          { nome: 'Vice-Presidente', candidatos: ['Eduardo Silva', 'Filipa Gomes', 'Gustavo Neves'] },
+          { nome: 'Presidente', candidatos: randomCandidatos() },
+          { nome: 'Vice-Presidente', candidatos: randomCandidatos() },
         ]
       },
       {
@@ -112,7 +129,7 @@ app.post('/api/seed', async (req, res) => {
         fim: new Date(agora.getTime() + 4*86400000),
         status: 'activa',
         multi_cargo: false,
-        candidatos: ['Helena Correia', 'Igor Pinto', 'Joana Tavares', 'Kelvin Ramos', 'Lúcia Barbosa']
+        candidatos: randomCandidatos()
       },
       {
         titulo: 'Eleição do Delegado dos Funcionários',
@@ -121,7 +138,7 @@ app.post('/api/seed', async (req, res) => {
         fim: new Date(agora.getTime() + 17*86400000),
         status: 'rascunho',
         multi_cargo: false,
-        candidatos: ['Manuel Castro', 'Natália Freitas', 'Óscar Matos', 'Paula Teixeira']
+        candidatos: randomCandidatos()
       },
       {
         titulo: 'Eleição do Representante de Turma',
@@ -130,7 +147,7 @@ app.post('/api/seed', async (req, res) => {
         fim: new Date(agora.getTime() - 3*86400000),
         status: 'encerrada',
         multi_cargo: false,
-        candidatos: ['Rita Carvalho', 'Samuel Moreira', 'Tânia Andrade', 'Ulisses Fonseca', 'Vitória Melo']
+        candidatos: randomCandidatos()
       },
       {
         titulo: 'Eleição da Comissão de Ética',
@@ -140,9 +157,9 @@ app.post('/api/seed', async (req, res) => {
         status: 'activa',
         multi_cargo: true,
         cargos: [
-          { nome: 'Presidente', candidatos: ['Wilson Oliveira', 'Xavier Dias', 'Yara Santos'] },
-          { nome: 'Secretário', candidatos: ['André Lopes', 'Bruna Castro', 'Cristiano Neves'] },
-          { nome: 'Vogal', candidatos: ['Daniela Faria', 'Érica Gomes', 'Fábio Martins'] },
+          { nome: 'Presidente', candidatos: randomCandidatos() },
+          { nome: 'Secretário', candidatos: randomCandidatos() },
+          { nome: 'Vogal', candidatos: randomCandidatos() },
         ]
       },
     ];

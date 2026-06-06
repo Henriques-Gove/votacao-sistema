@@ -91,6 +91,8 @@ ALTER TABLE eleicoes    ADD COLUMN IF NOT EXISTS multi_cargo BOOLEAN NOT NULL DE
 ALTER TABLE eleicoes    ADD COLUMN IF NOT EXISTS grupo_id INT;
 ALTER TABLE eleicoes    ADD FOREIGN KEY (grupo_id) REFERENCES grupos(id);
 ALTER TABLE users       ADD COLUMN IF NOT EXISTS foto TEXT;
+ALTER TABLE suporte_mensagens ADD COLUMN IF NOT EXISTS resposta TEXT;
+ALTER TABLE suporte_mensagens ADD COLUMN IF NOT EXISTS respondido_em TIMESTAMP;
 ALTER TABLE candidatos  ADD COLUMN IF NOT EXISTS cargo_id INT REFERENCES cargos(id);
 -- Recreate cargos, candidatos, votos with full schema (safe if empty)
 ALTER TABLE votos DROP CONSTRAINT IF EXISTS votos_cargo_id_fkey;

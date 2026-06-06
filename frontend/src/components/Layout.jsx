@@ -1,14 +1,30 @@
+import { useState, useEffect } from 'react'
 import { Outlet, useLocation, Link } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import AnimatedPage from './AnimatedPage'
 import InstallButton from './InstallButton'
+import api from '@/api/client'
 
 export default function Layout() {
   const { user, logout, isAdmin } = useAuth()
   const { theme, toggle } = useTheme()
   const location = useLocation()
+  const [naoLidas, setNaoLidas] = useState(0)
+
+  useEffect(() => {
+    if (!isAdmin) return
+    const fetchCount = async () => {
+      try {
+        const data = await api.get('/suporte/nao-lidas')
+        setNaoLidas(data.count)
+      } catch {}
+    }
+    fetchCount()
+    const interval = setInterval(fetchCount, 30000)
+    return () => clearInterval(interval)
+  }, [isAdmin])
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/')
 
@@ -35,7 +51,14 @@ export default function Layout() {
               <NavLink to="/admin/eleicoes" active={isActive('/admin/eleicoes')}>Gerir Eleições</NavLink>
               <NavLink to="/admin/grupos" active={isActive('/admin/grupos')}>Grupos</NavLink>
               <NavLink to="/admin/utilizadores" active={isActive('/admin/utilizadores')}>Utilizadores</NavLink>
-              <NavLink to="/admin/suporte" active={isActive('/admin/suporte')}>Suporte</NavLink>
+              <div className="relative">
+                <NavLink to="/admin/suporte" active={isActive('/admin/suporte')}>Suporte</NavLink>
+                {naoLidas > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-red-500/40 animate-pulse">
+                    {naoLidas > 9 ? '9+' : naoLidas}
+                  </span>
+                )}
+              </div>
               <NavLink to="/admin/audit" active={isActive('/admin/audit')}>Auditoria</NavLink>
             </>}
           </nav>
@@ -92,7 +115,14 @@ export default function Layout() {
             <NavLink to="/admin/eleicoes" active={isActive('/admin/eleicoes')}>Gerir</NavLink>
             <NavLink to="/admin/grupos" active={isActive('/admin/grupos')}>Grupos</NavLink>
             <NavLink to="/admin/utilizadores" active={isActive('/admin/utilizadores')}>Users</NavLink>
-            <NavLink to="/admin/suporte" active={isActive('/admin/suporte')}>Suporte</NavLink>
+            <div className="relative">
+              <NavLink to="/admin/suporte" active={isActive('/admin/suporte')}>Suporte</NavLink>
+              {naoLidas > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-red-500/40">
+                  {naoLidas > 9 ? '9+' : naoLidas}
+                </span>
+              )}
+            </div>
             <NavLink to="/admin/audit" active={isActive('/admin/audit')}>Auditoria</NavLink>
           </>}
         </div>

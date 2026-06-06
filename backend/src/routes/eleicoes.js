@@ -10,6 +10,8 @@ async function runMigrations() {
     await db.query(`ALTER TABLE eleicoes ADD COLUMN IF NOT EXISTS grupo_id INT`);
     await db.query(`ALTER TABLE eleicoes ADD FOREIGN KEY (grupo_id) REFERENCES grupos(id)`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS foto TEXT`);
+    await db.query(`ALTER TABLE suporte_mensagens ADD COLUMN IF NOT EXISTS resposta TEXT`);
+    await db.query(`ALTER TABLE suporte_mensagens ADD COLUMN IF NOT EXISTS respondido_em TIMESTAMP`);
     await db.query(`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS cargo_id INT REFERENCES cargos(id)`);
     await db.query(`ALTER TABLE votos DROP CONSTRAINT IF EXISTS votos_cargo_id_fkey`);
     await db.query(`ALTER TABLE votos DROP CONSTRAINT IF EXISTS votos_candidato_id_fkey`);

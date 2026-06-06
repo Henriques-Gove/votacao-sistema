@@ -31,6 +31,29 @@ router.get('/', adminMiddleware, async (req, res) => {
   }
 });
 
+router.get('/nao-lidas', authMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT COUNT(*)::int as count FROM suporte_mensagens WHERE lida = FALSE');
+    res.json({ count: rows[0].count });
+  } catch (e) {
+    res.json({ count: 0 });
+  }
+});
+
+router.put('/:id/responder', adminMiddleware, async (req, res) => {
+  const { resposta } = req.body;
+  if (!resposta) return res.status(400).json({ message: 'Resposta é obrigatória' });
+  try {
+    await db.query(
+      'UPDATE suporte_mensagens SET resposta = $1, lida = TRUE, respondido_em = NOW() WHERE id = $2',
+      [resposta.trim(), req.params.id]
+    );
+    res.json({ message: 'Resposta enviada' });
+  } catch (e) {
+    res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
 router.put('/:id/ler', adminMiddleware, async (req, res) => {
   try {
     await db.query('UPDATE suporte_mensagens SET lida = TRUE WHERE id = $1', [req.params.id]);
