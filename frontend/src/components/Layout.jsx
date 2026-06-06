@@ -29,7 +29,7 @@ export default function Layout() {
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/')
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50/60 via-white to-white dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors" style={{backgroundImage: 'radial-gradient(rgba(99,102,241,0.06) 1px, transparent 1px)', backgroundSize: '24px 24px'}}>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50/70 via-white to-white dark:from-[#0a0a1a] dark:via-[#0d0d24] dark:to-[#120826] transition-colors" style={{backgroundImage: 'radial-gradient(rgba(99,102,241,0.08) 1px, transparent 1px)', backgroundSize: '24px 24px'}}>
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-800/60 transition-colors supports-backdrop-blur:bg-white/60">
         <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between">
