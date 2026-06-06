@@ -158,7 +158,7 @@ router.post('/', adminMiddleware, async (req, res) => {
   try {
     const { rows } = await db.query(
       'INSERT INTO eleicoes (titulo, descricao, inicio, fim, multi_cargo, criado_por, grupo_id) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',
-      [titulo.trim(), descricao || '', inicio, fim, isMulti, req.user.id, grupo_id || null]
+      [titulo.trim(), descricao || '', inicio, fim, !!isMulti, req.user.id, grupo_id || null]
     );
     const eleicaoId = rows[0].id;
 
