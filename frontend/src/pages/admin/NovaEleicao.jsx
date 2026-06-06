@@ -1,6 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useTheme } from '@/context/ThemeContext'
 import api from '@/api/client'
 import toast from 'react-hot-toast'
 
@@ -10,8 +9,14 @@ export default function NovaEleicao() {
   const [descricao, setDescricao] = useState('')
   const [inicio, setInicio]       = useState('')
   const [fim, setFim]             = useState('')
+  const [grupoId, setGrupoId]     = useState('')
+  const [grupos, setGrupos]       = useState([])
   const [candidatos, setCandidatos] = useState([{ nome: '', descricao: '' }, { nome: '', descricao: '' }])
   const [loading, setLoading]     = useState(false)
+
+  useEffect(() => {
+    api.get('/grupos').then(setGrupos).catch(() => {})
+  }, [])
 
   function addCandidato() {
     setCandidatos([...candidatos, { nome: '', descricao: '' }])
@@ -33,7 +38,10 @@ export default function NovaEleicao() {
     if (candidatos.some(c => !c.nome.trim())) return toast.error('Todos os candidatos precisam de nome')
     setLoading(true)
     try {
-      await api.post('/eleicoes', { titulo, descricao, inicio, fim, candidatos })
+      await api.post('/eleicoes', {
+        titulo, descricao, inicio, fim, candidatos,
+        grupo_id: grupoId ? Number(grupoId) : null,
+      })
       toast.success('Eleição criada!')
       navigate('/admin/eleicoes')
     } catch (e) { toast.error(e.message) }
@@ -55,7 +63,15 @@ export default function NovaEleicao() {
           <Field label="Descrição (opcional)">
             <textarea value={descricao} onChange={e => setDescricao(e.target.value)}
               placeholder="Descreva o objectivo desta eleição..."
-              className="w-full rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-600 resize-none h-24 bg-gray-100 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white" />
+              className="w-full bg-gray-100 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-600 resize-none h-24" />
+          </Field>
+          <Field label="Grupo (opcional)">
+            <select value={grupoId} onChange={e => setGrupoId(e.target.value)}
+              className="w-full bg-gray-100 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500">
+              <option value="">Todos os eleitores</option>
+              {grupos.map(g => <option key={g.id} value={g.id}>{g.nome}</option>)}
+            </select>
+            <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Se escolher um grupo, apenas esse grupo pode votar</p>
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Data de Início">
@@ -107,10 +123,5 @@ function Field({ label, children }) {
 }
 
 function Input(props) {
-  const { theme } = useTheme()
-  return <input {...props} className={`w-full rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-600 ${
-    theme === 'dark'
-      ? 'bg-slate-900 border border-slate-600 text-white'
-      : 'bg-gray-100 border border-gray-300 text-gray-900'
-  }`} />
+  return <input {...props} className="w-full bg-gray-100 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-600" />
 }

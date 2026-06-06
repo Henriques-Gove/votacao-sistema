@@ -7,6 +7,7 @@ const authRouter = require('./routes/auth');
 const eleicaoRouter = require('./routes/eleicoes');
 const votoRouter = require('./routes/votos');
 const userRouter = require('./routes/users');
+const grupoRouter = require('./routes/grupos');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,6 +23,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/eleicoes', eleicaoRouter);
 app.use('/api/votos', votoRouter);
 app.use('/api/users', userRouter);
+app.use('/api/grupos', grupoRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

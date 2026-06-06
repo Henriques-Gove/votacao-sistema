@@ -6,11 +6,24 @@ const router = express.Router();
 
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    let sql, params = [];
+    let sql, params;
     if (req.user.role === 'admin') {
-      sql = 'SELECT e.*, u.nome as criado_por_nome FROM eleicoes e JOIN users u ON u.id = e.criado_por ORDER BY e.created_at DESC';
+      sql = `SELECT e.*, u.nome as criado_por_nome, g.nome as grupo_nome
+             FROM eleicoes e
+             JOIN users u ON u.id = e.criado_por
+             LEFT JOIN grupos g ON g.id = e.grupo_id
+             ORDER BY e.created_at DESC`;
+      params = [];
     } else {
-      sql = "SELECT e.*, u.nome as criado_por_nome FROM eleicoes e JOIN users u ON u.id = e.criado_por WHERE e.status = 'activa' ORDER BY e.fim ASC";
+      sql = `SELECT DISTINCT e.*, u.nome as criado_por_nome, g.nome as grupo_nome
+             FROM eleicoes e
+             JOIN users u ON u.id = e.criado_por
+             LEFT JOIN grupos g ON g.id = e.grupo_id
+             LEFT JOIN user_grupos ug ON ug.grupo_id = e.grupo_id
+             WHERE e.status = 'activa'
+               AND (e.grupo_id IS NULL OR ug.user_id = $1)
+             ORDER BY e.fim ASC`;
+      params = [req.user.id];
     }
     const { rows } = await db.query(sql, params);
     res.json(rows);
@@ -21,27 +34,40 @@ router.get('/', authMiddleware, async (req, res) => {
 
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
-    const { rows: el } = await db.query('SELECT * FROM eleicoes WHERE id = $1', [req.params.id]);
+    const { rows: el } = await db.query(
+      'SELECT e.*, g.nome as grupo_nome FROM eleicoes e LEFT JOIN grupos g ON g.id = e.grupo_id WHERE e.id = $1',
+      [req.params.id]
+    );
     if (!el.length) return res.status(404).json({ message: 'Eleição não encontrada' });
 
     const { rows: candidatos } = await db.query(
-      'SELECT c.*, COUNT(v.id)::int as total_votos FROM candidatos c LEFT JOIN votos v ON v.candidato_id = c.id WHERE c.eleicao_id = $1 GROUP BY c.id',
+      'SELECT c.*, COALESCE(COUNT(v.id) FILTER (WHERE v.tipo_voto = \'candidato\'), 0)::int as total_votos FROM candidatos c LEFT JOIN votos v ON v.candidato_id = c.id WHERE c.eleicao_id = $1 GROUP BY c.id',
       [req.params.id]
     );
 
     const { rows: jaVotou } = await db.query(
-      'SELECT id FROM votos WHERE eleicao_id = $1 AND eleitor_id = $2',
+      'SELECT id, tipo_voto FROM votos WHERE eleicao_id = $1 AND eleitor_id = $2',
       [req.params.id, req.user.id]
     );
 
-    res.json({ ...el[0], candidatos, ja_votou: jaVotou.length > 0 });
+    const { rows: totalInscritos } = el[0].grupo_id
+      ? await db.query('SELECT COUNT(*)::int as total FROM user_grupos WHERE grupo_id = $1', [el[0].grupo_id])
+      : await db.query('SELECT COUNT(*)::int as total FROM users WHERE role = \'eleitor\'');
+
+    res.json({
+      ...el[0],
+      candidatos,
+      ja_votou: jaVotou.length > 0,
+      tipo_voto_usuario: jaVotou[0]?.tipo_voto || null,
+      total_inscritos: totalInscritos[0].total,
+    });
   } catch (e) {
     res.status(500).json({ message: 'Erro interno' });
   }
 });
 
 router.post('/', adminMiddleware, async (req, res) => {
-  const { titulo, descricao, inicio, fim, candidatos } = req.body;
+  const { titulo, descricao, inicio, fim, candidatos, grupo_id } = req.body;
   if (!titulo || !inicio || !fim)
     return res.status(400).json({ message: 'Título, início e fim são obrigatórios' });
   if (!candidatos || candidatos.length < 2)
@@ -49,8 +75,8 @@ router.post('/', adminMiddleware, async (req, res) => {
 
   try {
     const { rows } = await db.query(
-      'INSERT INTO eleicoes (titulo, descricao, inicio, fim, criado_por) VALUES ($1,$2,$3,$4,$5) RETURNING id',
-      [titulo, descricao || '', inicio, fim, req.user.id]
+      'INSERT INTO eleicoes (titulo, descricao, inicio, fim, criado_por, grupo_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+      [titulo, descricao || '', inicio, fim, req.user.id, grupo_id || null]
     );
     const eleicaoId = rows[0].id;
 
@@ -91,14 +117,17 @@ router.delete('/:id', adminMiddleware, async (req, res) => {
 
 router.get('/:id/resultados', authMiddleware, async (req, res) => {
   try {
-    const { rows: el } = await db.query('SELECT * FROM eleicoes WHERE id = $1', [req.params.id]);
+    const { rows: el } = await db.query(
+      'SELECT e.*, g.nome as grupo_nome FROM eleicoes e LEFT JOIN grupos g ON g.id = e.grupo_id WHERE e.id = $1',
+      [req.params.id]
+    );
     if (!el.length) return res.status(404).json({ message: 'Não encontrada' });
 
     if (req.user.role !== 'admin' && el[0].status !== 'encerrada')
       return res.status(403).json({ message: 'Resultados disponíveis apenas após encerramento' });
 
     const { rows: candidatos } = await db.query(
-      `SELECT c.id, c.nome, c.descricao, COUNT(v.id)::int as votos
+      `SELECT c.id, c.nome, c.descricao, COALESCE(COUNT(v.id) FILTER (WHERE v.tipo_voto = 'candidato'), 0)::int as votos
        FROM candidatos c
        LEFT JOIN votos v ON v.candidato_id = c.id
        WHERE c.eleicao_id = $1
@@ -107,8 +136,32 @@ router.get('/:id/resultados', authMiddleware, async (req, res) => {
       [req.params.id]
     );
 
-    const totalVotos = candidatos.reduce((s, c) => s + Number(c.votos), 0);
-    res.json({ eleicao: el[0], candidatos, total_votos: totalVotos });
+    const { rows: contagem } = await db.query(
+      `SELECT tipo_voto, COUNT(*)::int as total
+       FROM votos WHERE eleicao_id = $1 GROUP BY tipo_voto`,
+      [req.params.id]
+    );
+
+    const votosCandidato = contagem.find(r => r.tipo_voto === 'candidato')?.total || 0;
+    const votosBranco = contagem.find(r => r.tipo_voto === 'branco')?.total || 0;
+    const votosNulo = contagem.find(r => r.tipo_voto === 'nulo')?.total || 0;
+    const totalVotos = votosCandidato + votosBranco + votosNulo;
+
+    const { rows: totalInscritos } = el[0].grupo_id
+      ? await db.query('SELECT COUNT(*)::int as total FROM user_grupos WHERE grupo_id = $1', [el[0].grupo_id])
+      : await db.query('SELECT COUNT(*)::int as total FROM users WHERE role = \'eleitor\'');
+
+    const totalInsc = totalInscritos[0].total;
+
+    res.json({
+      eleicao: el[0],
+      candidatos,
+      total_votos: totalVotos,
+      votos_branco: votosBranco,
+      votos_nulo: votosNulo,
+      total_inscritos: totalInsc,
+      abstencao: totalInsc - totalVotos,
+    });
   } catch (e) {
     res.status(500).json({ message: 'Erro interno' });
   }

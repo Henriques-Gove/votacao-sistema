@@ -23,6 +23,7 @@ export default function Layout() {
             <NavLink to="/eleicoes" active={isActive('/eleicoes')} theme={theme}>Eleições</NavLink>
             {isAdmin && <>
               <NavLink to="/admin/eleicoes" active={isActive('/admin/eleicoes')} theme={theme}>Gerir Eleições</NavLink>
+              <NavLink to="/admin/grupos" active={isActive('/admin/grupos')} theme={theme}>Grupos</NavLink>
               <NavLink to="/admin/utilizadores" active={isActive('/admin/utilizadores')} theme={theme}>Utilizadores</NavLink>
             </>}
           </nav>
@@ -54,6 +55,7 @@ export default function Layout() {
           <NavLink to="/eleicoes" active={isActive('/eleicoes')} theme={theme}>Eleições</NavLink>
           {isAdmin && <>
             <NavLink to="/admin/eleicoes" active={isActive('/admin/eleicoes')} theme={theme}>Gerir</NavLink>
+            <NavLink to="/admin/grupos" active={isActive('/admin/grupos')} theme={theme}>Grupos</NavLink>
             <NavLink to="/admin/utilizadores" active={isActive('/admin/utilizadores')} theme={theme}>Users</NavLink>
           </>}
         </div>

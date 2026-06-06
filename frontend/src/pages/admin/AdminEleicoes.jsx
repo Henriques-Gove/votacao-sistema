@@ -52,8 +52,9 @@ export default function AdminEleicoes() {
             <div key={e.id} className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-gray-200 dark:border-slate-700">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <StatusBadge status={e.status} />
+                    {e.grupo_nome && <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-400">{e.grupo_nome}</span>}
                   </div>
                   <h3 className="text-gray-900 dark:text-white font-semibold">{e.titulo}</h3>
                   <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">

@@ -8,11 +8,13 @@ import DetalheEleicao from './pages/DetalheEleicao'
 import Resultados from './pages/Resultados'
 import AdminEleicoes from './pages/admin/AdminEleicoes'
 import AdminUtilizadores from './pages/admin/AdminUtilizadores'
+import AdminGrupos from './pages/admin/AdminGrupos'
+import AdminGrupoMembros from './pages/admin/AdminGrupoMembros'
 import NovaEleicao from './pages/admin/NovaEleicao'
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400">A carregar...</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-500 dark:text-slate-400">A carregar...</div>
   return user ? children : <Navigate to="/login" />
 }
 
@@ -37,6 +39,8 @@ export default function App() {
         <Route path="admin/eleicoes" element={<AdminRoute><AdminEleicoes /></AdminRoute>} />
         <Route path="admin/eleicoes/nova" element={<AdminRoute><NovaEleicao /></AdminRoute>} />
         <Route path="admin/utilizadores" element={<AdminRoute><AdminUtilizadores /></AdminRoute>} />
+        <Route path="admin/grupos" element={<AdminRoute><AdminGrupos /></AdminRoute>} />
+        <Route path="admin/grupos/:id" element={<AdminRoute><AdminGrupoMembros /></AdminRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

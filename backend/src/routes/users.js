@@ -27,4 +27,32 @@ router.put('/:id/role', adminMiddleware, async (req, res) => {
   }
 });
 
+router.get('/:id/grupos', adminMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT g.id, g.nome FROM grupos g
+       JOIN user_grupos ug ON ug.grupo_id = g.id
+       WHERE ug.user_id = $1`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
+router.get('/sem-grupo', adminMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT u.id, u.nome, u.email FROM users u
+       WHERE u.role = 'eleitor'
+       AND NOT EXISTS (SELECT 1 FROM user_grupos ug WHERE ug.user_id = u.id)
+       ORDER BY u.nome`
+    );
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
 module.exports = router;

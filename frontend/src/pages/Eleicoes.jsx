@@ -21,8 +21,11 @@ export default function Eleicoes() {
           {eleicoes.map(e => (
             <div key={e.id} className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-200 dark:border-slate-700 flex flex-col gap-4">
               <div>
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <StatusBadge status={e.status} />
+                  {e.grupo_nome && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-400">{e.grupo_nome}</span>
+                  )}
                 </div>
                 <h3 className="text-gray-900 dark:text-white font-semibold text-lg">{e.titulo}</h3>
                 {e.descricao && <p className="text-gray-500 dark:text-slate-400 text-sm mt-1 line-clamp-2">{e.descricao}</p>}
