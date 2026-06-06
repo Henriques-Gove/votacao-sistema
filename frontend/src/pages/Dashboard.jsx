@@ -247,7 +247,7 @@ function PhoneMockup() {
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center text-[6px] text-white">✓</div>
                 <div>
-                  <p className="text-[7px] font-medium text-white/90">Eleição Direcção</p>
+                  <p className="text-[7px] font-medium text-white/90">Eleição Presidencial</p>
                   <p className="text-[6px] text-indigo-200">Confirmado</p>
                 </div>
               </div>
@@ -256,7 +256,7 @@ function PhoneMockup() {
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 rounded-full bg-white/10" />
                 <div>
-                  <p className="text-[7px] font-medium text-white/60">Eleição Turma</p>
+                  <p className="text-[7px] font-medium text-white/60">Assembleia Geral</p>
                   <p className="text-[6px] text-white/30">Disponível</p>
                 </div>
               </div>

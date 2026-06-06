@@ -88,14 +88,14 @@ VALUES ('Administrador', 'admin@votacao.mz',
 ON CONFLICT (email) DO UPDATE SET password = EXCLUDED.password, role = 'admin', verified = TRUE;
 
 INSERT INTO grupos (nome, descricao) VALUES
-  ('Direcção da Escola', 'Director, subdirectores e chefes de departamento'),
-  ('Professores', 'Corpo docente da escola'),
-  ('Funcionários', 'Pessoal administrativo e auxiliar'),
-  ('Associação de Pais', 'Representantes dos encarregados de educação'),
-  ('Conselho Escolar', 'Membros do conselho escolar'),
-  ('Delegados de Turma', 'Delegados e subdelegados de todas as turmas'),
-  ('Alunos 1º Ciclo', 'Alunos do 1º ao 4º ano'),
-  ('Alunos 2º Ciclo', 'Alunos do 5º ao 6º ano'),
-  ('Alunos 3º Ciclo', 'Alunos do 7º ao 9º ano'),
-  ('Alunos Secundário', 'Alunos do 10º ao 12º ano')
+  ('Direcção Executiva', 'Presidente, vice-presidentes e directores'),
+  ('Assembleia Geral', 'Deputados e representantes do povo'),
+  ('Conselho Fiscal', 'Órgão de fiscalização e auditoria'),
+  ('Comissão Eleitoral', 'Organização e supervisão do processo eleitoral'),
+  ('Membros Efectivos', 'Membros com direito a voto'),
+  ('Delegados', 'Representantes eleitos de cada região'),
+  ('Funcionários', 'Colaboradores da instituição'),
+  ('Cidadãos', 'Eleitorado geral e público'),
+  ('Observadores', 'Observadores nacionais e internacionais'),
+  ('Convidados', 'Convidados sem direito a voto')
 ON CONFLICT (nome) DO NOTHING;
