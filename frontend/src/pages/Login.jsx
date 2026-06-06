@@ -56,11 +56,11 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-gray-50 via-indigo-50/50 to-purple-50/50 dark:from-slate-900 dark:via-indigo-950/30 dark:to-purple-950/30 transition-colors">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gray-50 dark:bg-slate-900 transition-colors">
       <div className="w-full max-w-sm animate-slide-up">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-xl shadow-indigo-500/30">
+          <div className="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-xl shadow-indigo-500/30">
             V
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">VotaçãoMZ</h1>
@@ -75,7 +75,7 @@ export default function Login() {
                 <button key={t} onClick={() => setTab(t)}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all capitalize ${
                     tab === t
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30'
                       : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
                   }`}>
                   {t === 'login' ? 'Entrar' : 'Criar Conta'}
@@ -109,7 +109,7 @@ export default function Login() {
                 } onEnter={tab === 'login' ? fazerLogin : fazerRegisto} />
               </Field>
               <button onClick={tab === 'login' ? fazerLogin : fazerRegisto} disabled={loading}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-500/30 mt-1">
+                className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-500/30 mt-1">
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -146,7 +146,7 @@ export default function Login() {
               <Input value={otpCode} onChange={setOtpCode} placeholder="000000" maxLength={6} onEnter={verificarOtp} />
             </Field>
             <button onClick={verificarOtp} disabled={loading}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-500/30">
+              className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-500/30">
               {loading ? 'A verificar...' : 'Verificar Código'}
             </button>
             <button onClick={reenviarOtp} className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 text-center hover:underline">

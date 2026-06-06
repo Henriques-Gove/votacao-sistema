@@ -40,7 +40,7 @@ export default function AdminEleicoes() {
           <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Painel de administração</p>
         </div>
         <Link to="/admin/eleicoes/nova"
-          className="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-semibold transition-all shadow-lg shadow-indigo-500/30">
+          className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-all shadow-md shadow-indigo-500/30">
           + Nova Eleição
         </Link>
       </div>

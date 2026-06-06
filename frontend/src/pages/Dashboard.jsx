@@ -36,15 +36,10 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col gap-6">
 
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 dark:from-indigo-800 dark:via-indigo-900 dark:to-purple-950 rounded-3xl p-6 sm:p-8 text-white shadow-2xl">
-        <div className="absolute top-0 right-0 w-64 h-64 opacity-10">
-          <div className="absolute top-10 right-10 w-32 h-32 border-8 border-white rounded-full" />
-          <div className="absolute top-20 right-20 w-20 h-20 bg-white rounded-full" />
-          <div className="absolute bottom-10 right-0 w-40 h-40 border-8 border-white/50 rounded-full" />
-        </div>
-        <div className="relative z-10 flex items-center gap-4 sm:gap-6">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/40 overflow-hidden flex-shrink-0 shadow-lg">
+      {/* Hero */}
+      <div className="bg-indigo-600 dark:bg-indigo-700 rounded-3xl p-6 sm:p-8 text-white shadow-lg">
+        <div className="flex items-center gap-4 sm:gap-6">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/20 border-2 border-white/40 overflow-hidden flex-shrink-0">
             {user?.foto ? (
               <img src={user.foto} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -54,13 +49,13 @@ export default function Dashboard() {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-3xl font-bold truncate">Olá, {user?.nome?.split(' ')[0]}!</h1>
-            <p className="text-indigo-200 text-sm sm:text-base mt-1">
-              {isAdmin ? 'Painel de Administração do Sistema' : 'Bem-vindo ao sistema de votação electrónica'}
+            <h1 className="text-xl sm:text-2xl font-bold truncate">Olá, {user?.nome?.split(' ')[0]}!</h1>
+            <p className="text-indigo-100 text-sm sm:text-base mt-0.5">
+              {isAdmin ? 'Painel de Administração' : 'Bem-vindo ao sistema de votação'}
             </p>
           </div>
           {isAdmin && (
-            <span className="hidden sm:inline-flex text-xs px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 font-medium">
+            <span className="hidden sm:inline-flex text-xs px-3 py-1 rounded-full bg-white/20 border border-white/30 font-medium">
               Administrador
             </span>
           )}
@@ -69,10 +64,10 @@ export default function Dashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <StatBadge label="Eleições Activas" value={activas} icon="⚡" gradient="from-emerald-500 to-teal-600" />
-        <StatBadge label="Votos Registados" value={meusVotos.length} icon="📋" gradient="from-blue-500 to-indigo-600" />
-        <StatBadge label="Encerradas" value={encerradas} icon="🏁" gradient="from-slate-500 to-slate-700" />
-        <StatBadge label="Rascunhos" value={rascunhos} icon="📝" gradient="from-amber-500 to-orange-600" />
+        <StatCard label="Eleições Activas" value={activas} color="emerald" />
+        <StatCard label="Votos Registados" value={meusVotos.length} color="indigo" />
+        <StatCard label="Encerradas" value={encerradas} color="gray" />
+        <StatCard label="Rascunhos" value={rascunhos} color="amber" />
       </div>
 
       {/* Admin Charts */}
@@ -87,15 +82,15 @@ export default function Dashboard() {
                   { n: 'Rascunho', v: rascunhos, c: '#f59e0b' },
                 ].filter(d => d.v > 0)} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="v" nameKey="n">
                   {[
-                    ...(activas > 0 ? [{ n: 'Activas', c: '#10b981' }] : []),
-                    ...(encerradas > 0 ? [{ n: 'Encerradas', c: '#6366f1' }] : []),
-                    ...(rascunhos > 0 ? [{ n: 'Rascunho', c: '#f59e0b' }] : []),
+                    ...(activas > 0 ? [{ c: '#10b981' }] : []),
+                    ...(encerradas > 0 ? [{ c: '#6366f1' }] : []),
+                    ...(rascunhos > 0 ? [{ c: '#f59e0b' }] : []),
                   ].map((d, i) => <Cell key={i} fill={d.c} />)}
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
-            <div className="flex justify-center gap-4 text-xs text-gray-500 dark:text-slate-400">
+            <div className="flex justify-center gap-4 text-xs text-gray-500 dark:text-slate-400 mt-1">
               {[{ n: 'Activas', v: activas, c: '#10b981' }, { n: 'Encerradas', v: encerradas, c: '#6366f1' }, { n: 'Rascunho', v: rascunhos, c: '#f59e0b' }].filter(x => x.v > 0).map(x => (
                 <span key={x.n} className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ background: x.c }} />
@@ -113,14 +108,14 @@ export default function Dashboard() {
                   { n: 'Administradores', v: admins, c: '#f59e0b' },
                 ].filter(d => d.v > 0)} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="v" nameKey="n">
                   {[
-                    ...(eleitores > 0 ? [{ n: 'Eleitores', c: '#6366f1' }] : []),
-                    ...(admins > 0 ? [{ n: 'Administradores', c: '#f59e0b' }] : []),
+                    ...(eleitores > 0 ? [{ c: '#6366f1' }] : []),
+                    ...(admins > 0 ? [{ c: '#f59e0b' }] : []),
                   ].map((d, i) => <Cell key={i} fill={d.c} />)}
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
-            <div className="flex justify-center gap-4 text-xs text-gray-500 dark:text-slate-400">
+            <div className="flex justify-center gap-4 text-xs text-gray-500 dark:text-slate-400 mt-1">
               <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ background: '#6366f1' }} />Eleitores: {eleitores}</span>
               <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ background: '#f59e0b' }} />Admin: {admins}</span>
             </div>
@@ -131,7 +126,7 @@ export default function Dashboard() {
       {/* Admin: Groups + Recent Elections */}
       {isAdmin && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-gray-200 dark:border-slate-700 shadow-sm">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-gray-200 dark:border-slate-700">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">Grupos</h3>
             {grupos.length === 0 ? (
               <p className="text-gray-400 dark:text-slate-500 text-sm">Nenhum grupo criado</p>
@@ -147,7 +142,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-gray-200 dark:border-slate-700 shadow-sm">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-gray-200 dark:border-slate-700">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">Eleições Recentes</h3>
             <div className="flex flex-col gap-2">
               {eleicoes.slice(0, 8).map(e => (
@@ -168,16 +163,16 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Active Elections (for everyone) */}
+      {/* Active Elections */}
       {eleicoes.filter(e => e.status === 'activa').length > 0 && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-gray-200 dark:border-slate-700 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-gray-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-gray-900 dark:text-white">Eleições Activas</h3>
             <Link to="/eleicoes" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Ver todas</Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {eleicoes.filter(e => e.status === 'activa').map(e => (
-              <div key={e.id} className="flex items-center justify-between p-4 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
+              <div key={e.id} className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white text-sm">{e.titulo}</p>
                   <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Até {new Date(e.fim).toLocaleDateString('pt-PT')}</p>
@@ -199,29 +194,29 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Bottom: Phone Voting Illustration */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black rounded-3xl p-6 sm:p-8 text-white shadow-2xl">
-        <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
+      {/* Bottom: How to Vote */}
+      <div className="bg-slate-100 dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700">
+        <div className="flex flex-col sm:flex-row items-center gap-6">
           <div className="flex-1">
-            <h3 className="text-lg sm:text-xl font-bold mb-2">Votar nunca foi tão fácil</h3>
-            <p className="text-slate-300 text-sm sm:text-base mb-4">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-white mb-2">Votar nunca foi tão fácil</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base mb-4">
               Use o seu telemóvel para votar de forma segura e anónima em qualquer lugar.
             </p>
-            <ul className="space-y-2 text-sm text-slate-300">
+            <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
               <li className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">✓</span>
+                <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xs font-bold">✓</span>
                 Aceda às eleições activas
               </li>
               <li className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">✓</span>
+                <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xs font-bold">✓</span>
                 Selecione o seu candidato
               </li>
               <li className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">✓</span>
+                <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xs font-bold">✓</span>
                 Confirme e vote com um clique
               </li>
               <li className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">✓</span>
+                <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xs font-bold">✓</span>
                 Verifique o seu voto com o código único
               </li>
             </ul>
@@ -238,11 +233,11 @@ export default function Dashboard() {
 function PhoneMockup() {
   return (
     <div className="relative w-48 h-72 sm:w-52 sm:h-80">
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-700 to-slate-800 rounded-[2rem] border-2 border-slate-600 shadow-2xl overflow-hidden">
-        <div className="absolute top-0 inset-x-0 h-6 bg-slate-900 flex items-center justify-center">
-          <div className="w-20 h-1.5 bg-slate-700 rounded-full" />
+      <div className="absolute inset-0 bg-slate-700 rounded-[2rem] border-2 border-slate-500 shadow-lg overflow-hidden">
+        <div className="absolute top-0 inset-x-0 h-6 bg-slate-800 flex items-center justify-center">
+          <div className="w-20 h-1.5 bg-slate-600 rounded-full" />
         </div>
-        <div className="mt-6 mx-2 p-3 bg-slate-900/50 rounded-2xl h-[calc(100%-3rem)] flex flex-col gap-2">
+        <div className="mt-6 mx-2 p-3 bg-slate-800/80 rounded-2xl h-[calc(100%-3rem)] flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-lg bg-indigo-500 flex items-center justify-center text-white text-[8px] font-bold">V</div>
             <span className="text-[8px] font-bold text-white">VotaçãoMZ</span>
@@ -253,7 +248,7 @@ function PhoneMockup() {
                 <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center text-[6px] text-white">✓</div>
                 <div>
                   <p className="text-[7px] font-medium text-white/90">Eleição Direcção</p>
-                  <p className="text-[6px] text-indigo-300">Confirmado</p>
+                  <p className="text-[6px] text-indigo-200">Confirmado</p>
                 </div>
               </div>
             </div>
@@ -281,12 +276,18 @@ function PhoneMockup() {
   )
 }
 
-function StatBadge({ label, value, icon, gradient }) {
+function StatCard({ label, value, color }) {
+  const styles = {
+    emerald: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-800' },
+    indigo:  { bg: 'bg-indigo-50 dark:bg-indigo-900/30',   text: 'text-indigo-700 dark:text-indigo-400',  border: 'border-indigo-200 dark:border-indigo-800' },
+    gray:    { bg: 'bg-gray-100 dark:bg-slate-700',        text: 'text-gray-600 dark:text-slate-300',     border: 'border-gray-200 dark:border-slate-600' },
+    amber:   { bg: 'bg-amber-50 dark:bg-amber-900/30',     text: 'text-amber-700 dark:text-amber-400',   border: 'border-amber-200 dark:border-amber-800' },
+  }
+  const s = styles[color]
   return (
-    <div className={`bg-gradient-to-br ${gradient} rounded-2xl p-4 sm:p-5 text-white shadow-lg relative overflow-hidden`}>
-      <div className="absolute top-2 right-2 opacity-20 text-2xl">{icon}</div>
-      <p className="text-xs text-white/70 uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-2xl sm:text-3xl font-bold">{value}</p>
+    <div className={`${s.bg} ${s.border} rounded-2xl p-4 sm:p-5 border shadow-sm`}>
+      <p className={`text-xs uppercase tracking-wider mb-1 ${s.text} opacity-75`}>{label}</p>
+      <p className={`text-3xl sm:text-4xl font-bold ${s.text}`}>{value}</p>
     </div>
   )
 }

@@ -17,10 +17,10 @@ export default function Layout() {
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-800/60 transition-colors">
         <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-base shadow-md shadow-indigo-500/30 group-hover:shadow-lg group-hover:shadow-indigo-500/40 transition-all">
+            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base shadow-md shadow-indigo-500/30 group-hover:shadow-lg group-hover:shadow-indigo-500/40 transition-all">
               V
             </div>
-            <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 text-lg">VotaçãoMZ</span>
+            <span className="font-bold text-indigo-600 dark:text-indigo-400 text-lg">VotaçãoMZ</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -65,7 +65,7 @@ export default function Layout() {
             </Link>
 
             {isAdmin && (
-              <span className="hidden md:inline-flex text-xs px-2.5 py-1 rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 text-indigo-700 dark:text-indigo-300 font-medium border border-indigo-200 dark:border-indigo-800">
+              <span className="hidden md:inline-flex text-xs px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-medium border border-indigo-200 dark:border-indigo-800">
                 Admin
               </span>
             )}
@@ -109,7 +109,7 @@ function NavLink({ to, active, children }) {
   return (
     <Link to={to} className={`text-sm font-medium px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
       active
-        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
+        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30'
         : 'text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-slate-800/50'
     }`}>
       {children}

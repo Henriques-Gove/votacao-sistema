@@ -210,7 +210,7 @@ export default function NovaEleicao() {
         )}
 
         <button onClick={submeter} disabled={loading}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 text-white font-semibold transition-all shadow-lg shadow-indigo-500/30">
+          className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold transition-all shadow-lg shadow-indigo-500/30">
           {loading ? 'A criar...' : 'Criar Eleição'}
         </button>
       </div>

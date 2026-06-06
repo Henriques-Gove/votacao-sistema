@@ -116,7 +116,7 @@ export default function Eleicoes() {
               <div className="mt-4">
                 {e.status === 'activa' && (
                   <Link to={`/eleicoes/${e.id}`}
-                    className="block w-full text-center py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-indigo-500/30">
+                    className="block w-full text-center py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-indigo-500/30">
                     Votar Agora
                   </Link>
                 )}
