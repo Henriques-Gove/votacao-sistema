@@ -22,6 +22,15 @@ export default function AdminUtilizadores() {
     } catch (e) { toast.error(e.message) }
   }
 
+  async function eliminar(id, nome) {
+    if (!window.confirm(`Tem a certeza que deseja eliminar "${nome}"?`)) return
+    try {
+      await api.delete(`/users/${id}`)
+      toast.success(`Utilizador ${nome} eliminado`)
+      carregar()
+    } catch (e) { toast.error(e.message) }
+  }
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Utilizadores</h2>
@@ -61,13 +70,20 @@ export default function AdminUtilizadores() {
                       {new Date(u.created_at).toLocaleDateString('pt-PT')}
                     </td>
                     <td className="px-5 py-3.5">
+                      <div className="flex gap-1.5">
                       {u.id !== eu?.id && (
-                        <button
-                          onClick={() => mudarRole(u.id, u.role === 'admin' ? 'eleitor' : 'admin')}
-                          className="text-xs px-3 py-1.5 border border-gray-300 dark:border-slate-600 hover:border-indigo-500 text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg transition-all">
+                        <>
+                        <button onClick={() => mudarRole(u.id, u.role === 'admin' ? 'eleitor' : 'admin')}
+                          className="text-xs px-2.5 py-1.5 border border-gray-300 dark:border-slate-600 hover:border-indigo-500 text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg transition-all">
                           {u.role === 'admin' ? 'Remover Admin' : 'Tornar Admin'}
                         </button>
+                        <button onClick={() => eliminar(u.id, u.nome)}
+                          className="text-xs px-2.5 py-1.5 border border-red-300 dark:border-red-700 hover:bg-red-600 text-red-600 dark:text-red-400 hover:text-white rounded-lg transition-all">
+                          Eliminar
+                        </button>
+                        </>
                       )}
+                      </div>
                     </td>
                   </tr>
                 ))}

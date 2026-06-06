@@ -55,4 +55,14 @@ router.get('/sem-grupo', adminMiddleware, async (req, res) => {
   }
 });
 
+router.delete('/:id', adminMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query('DELETE FROM users WHERE id = $1 RETURNING id, nome, email', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ message: 'Utilizador não encontrado' });
+    res.json({ message: `Utilizador ${rows[0].nome} (${rows[0].email}) eliminado` });
+  } catch (e) {
+    res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
 module.exports = router;
