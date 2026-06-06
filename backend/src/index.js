@@ -191,11 +191,11 @@ app.post('/api/seed', async (req, res) => {
             'INSERT INTO cargos (eleicao_id, nome, ordem) VALUES ($1,$2,$3) RETURNING id',
             [eid, crg.nome, i]
           );
-          const cargoInfo = { id: cr.id, nome: crg.nome, candidatos: [] };
+          const cargoInfo = { id: cr[0].id, nome: crg.nome, candidatos: [] };
           for (const nome of crg.candidatos) {
             const { rows: cand } = await db.query(
               'INSERT INTO candidatos (eleicao_id, cargo_id, nome) VALUES ($1,$2,$3) RETURNING id',
-              [eid, cr.id, nome]
+              [eid, cr[0].id, nome]
             );
             cargoInfo.candidatos.push({ id: cand[0].id, nome });
           }
