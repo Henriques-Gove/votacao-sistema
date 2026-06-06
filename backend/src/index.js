@@ -40,6 +40,7 @@ app.get('/api/debug/migrate', async (req, res) => {
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS foto TEXT`,
     `ALTER TABLE eleicoes ADD FOREIGN KEY (grupo_id) REFERENCES grupos(id)`,
     `ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS cargo_id INT REFERENCES cargos(id)`,
+    `ALTER TABLE votos ADD COLUMN IF NOT EXISTS cargo_id INT REFERENCES cargos(id)`,
     `ALTER TABLE votos ADD COLUMN IF NOT EXISTS hash_voto VARCHAR(64)`,
     `UPDATE users SET verified = TRUE WHERE verified = FALSE`,
     `SELECT COUNT(*)::int as unverified FROM users WHERE verified = FALSE`,
